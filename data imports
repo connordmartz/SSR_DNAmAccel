@@ -1,0 +1,121 @@
+#### DATA IMPORTS ####
+## 1. core public data ----
+core <- read_dta("~/Library/CloudStorage/Box-Box/FFCWS Data/FF_allwaves_2020v2.dta")
+core_reduced <- dplyr::select(core, "idnum","ch5agem", "ch6yagem", "f1citywt", "m1citywt", "f1natwt", "m1natwt", "f5citywt", "m5citywt", "f5natwt", "m5natwt",
+                              "k5natwt", "p5citywt", "p5natwt", "q5citywt", "q5natwt", "h6citywt", "h6natwt", "k6citywt",
+                              "ch5agem", "ch6yagem", "cm1bsex", "cm5povco", "cf5povco",	"cp6povco", "ck6ethrace",
+                              "cm5edu", "cf5edu", "cp6edu", "ch5bmiz", "ck6bmiz",	"m5g17", "m1g4", "p5h15", 
+                              "cm1ethrace", "cf1ethrace", "ck6bmiz", "k6d2c", "k6d2n", 
+                              "k6d2s", "k6d2x", "k6d2ac", "k6d2d", "k6d2j", "k6d2t", "k6d2ag", "k6d2ai", "k6d2ak", 
+                              "k5e2a", "k5e2b", "k5e2c", "k5e2d", "k6b32a", "k6b32b", "k6b32e", "k6b32f", "k5e1a", 
+                              "k5e1b", "k5e1c", "k5e1d", "k6b1a", "k6b1b", "k6b1c", "k6b1d", "k5h1", "p5h1", "k6d3", "p6b1", 
+                              "cp5idstat", "cm5cohf", "cf5cohm", "cm5cohp", "cf5cohp", "cm5kids", "cf5kids", "p6e27_1",
+                              "k6d2af", "k6d2y", "k6d2l", "k6d2g", "k6d2u", "k6d2h", "k6d2e", "k6d2ad",
+                              "k6d2m", "k6d2i", "k6d2k", "k6d2v", "k6d2ah", "k6d2ae", "k6d2o", "k6d2w",
+                              "k6d2b", "k6d2f", "k6d2s", "k6d2aa",
+                              "k6b1a", "k6b1b", "k6b1c", "k6b1d",
+                              "k6b32a", "k6b32b", "k6b32e", "k6b32f",
+                              "k6c40", "k6c41",
+                              "k6c17", "k6c18", "k6c19a", "k6c19b", "k6c19c", "k6c19d",
+                              "k6c28", "k6c29", "k6c30a", "k6c30b", "k6c30c", "k6c30d",
+                              "k6b32c", "k6b32d",
+                              "k6b4a", "k6b4b", "k6b4c", "k6b4d", "k6b4e", "k6b4f", "k6b4g",
+                              "k6b5a", "k6b5b", "k6b5c", 
+                              "k6b2", "k6e13d", "k6e15") 
+## 2. DNAm data ---- 
+dnam <- read_dta("~/Library/CloudStorage/Box-Box/FFCWS Data/biomarker_final_pub.dta")
+dnam_reduced <- dnam %>%
+  filter(k5_dnaavailable == 1, k6_dnaavailable == 1)
+core_dnam <- merge(dnam_reduced, core_reduced, by = "idnum") %>% mutate(
+  race = ifelse(ck6ethrace == 2, 1, # black to black
+                              ifelse(ck6ethrace == 1, 0, #white to white
+                                     ifelse(ck6ethrace == -9 &
+                                              cf1ethrace == 2 & 
+                                              cm1ethrace == 2, 1, 
+                                            ifelse(ck6ethrace == -9 &
+                                                     cf1ethrace == 1 &
+                                                     cm1ethrace == 1, 0, 3))))) %>% 
+  filter(race %in% c(0, 1)
+)
+## 4. geo-identifiers ----
+geoid <- read_dta("/Volumes/FragileFamilies/Data/new_contract_data_sep23/contractcity6pub.dta") 
+geoid_reduced <- dplyr::select(geoid, "idnum", "m1city")
+## 3, neighborhood contextual data ----
+census00 <- read_dta("/Volumes/FragileFamilies/Data/new_contract_data_sep23/ffgeo7_all_pub.dta") 
+census00_reduced <- dplyr::select(census00, "idnum", "tm5ppuba_cen00", "tm5pfbpl_cen00", "tm5mhinc_cen00", "tm5pblck_cen00", "tm5pwhte_cen00", 
+                                  "tp6ppuba_acs15", "tp6pfbpl_acs15", "tp6mhinc_acs15", "cp6_moved_9_15")
+## 5. segregation data ----
+FF_opp_in <- read_dta("/Volumes/FragileFamilies/Data/new_contract_data_sep23/ff_opin_cim_b9y_pub1.dta")
+## 6. civil rights data ----
+crcd <- read_dta("/Volumes/FragileFamilies/Data/new_contract_data_sep23/ff_sch_crdc_9y15y_pub2_2019.dta")
+#retain only needed variables
+crdc_reduced <- dplyr::select(crcd, "rs5crdc_schgft09", "rs5crdc_schgft11", "rs6crdc_schgft13", "rs6crdc_schgft15",
+                              "idnum", "rs5schidp", "rs6schidp", "rs5crdc_sentam09", "rs5crdc_sentam11", 
+                              "rs5crdc_schapc09", "rs5crdc_schapc11", "rs6crdc_schapc13", "rs6crdc_schapc15",
+                              "rs5crdc_sentaf11", "rs5crdc_sentwm09", "rs5crdc_sentwm11","rs5crdc_sentwf09",
+                              "rs5crdc_sentwf11", "rs5crdc_sentbm09", "rs5crdc_sentbm11", "rs5crdc_sentbf09",
+                              "rs5crdc_sentbf11", "rs5crdc_sniswm09", "rs5crdc_sniswm11", "rs5crdc_sniswf09", 
+                              "rs5crdc_sniswf11", "rs5crdc_snisbm09", "rs5crdc_snisbm11", "rs5crdc_snisbf09",
+                              "rs5crdc_snisbf11", "rs5crdc_snoswm09", "rs5crdc_snoswm11", "rs5crdc_snoswf09", 
+                              "rs5crdc_snoswf11", "rs5crdc_snosbm09", "rs5crdc_snosbm11", "rs5crdc_snosbf09", 
+                              "rs5crdc_snosbf11", "rs5crdc_snomwm09", "rs5crdc_snomwm11", "rs5crdc_snomwf09", 
+                              "rs5crdc_snomwf11", "rs5crdc_snombm09", "rs5crdc_snombm11", "rs5crdc_snombf09", 
+                              "rs5crdc_snombf11", "rs5crdc_sneswm09", "rs5crdc_sneswm11", "rs5crdc_sneswf09", 
+                              "rs5crdc_sneswf11", "rs5crdc_snesbm09", "rs5crdc_snesbm11", "rs5crdc_snesbf09", 
+                              "rs5crdc_snesbf11", "rs5crdc_snenwm09", "rs5crdc_snenwm11", "rs5crdc_snenwf09", 
+                              "rs5crdc_snenwf11", "rs5crdc_snenbm09", "rs5crdc_snenbm11", "rs5crdc_snenbf09", 
+                              "rs5crdc_snenbf11", "rs5crdc_snlewm09", "rs5crdc_snlewm11", "rs5crdc_snlewf09", 
+                              "rs5crdc_snlewf11", "rs5crdc_snlebm09", "rs5crdc_snlebm11", "rs5crdc_snlebf09", 
+                              "rs5crdc_snlebf11", "rs5crdc_sgftwm09", "rs5crdc_sgftwm11", "rs5crdc_sgftwf09", 
+                              "rs5crdc_sgftwf11", "rs5crdc_sgftbm09", "rs5crdc_sgftbm11", "rs5crdc_sgftbf09", 
+                              "rs5crdc_sgftbf11", "rs5crdc_tftetc09", "rs5crdc_tftetc11", "rs5crdc_tcertc09", 
+                              "rs5crdc_tcertc11", "rs5crdc_t1yttc09", "rs5crdc_t1yttc11", "rs6crdc_rabhbr15",
+                              "rs5crdc_fasald09", "rs5crdc_fasald11", "rs5crdc_ftsald09", "rs5crdc_sentaf09",
+                              "rs5crdc_ftsald11", "rs5crdc_fnpepd09", "rs5crdc_fnpepd11", "rs5crdc_rabhbr09",
+                              "rs5crdc_rabhbr11", "rs6crdc_sentam13", "rs6crdc_sentam15", "rs6crdc_sentaf13",
+                              "rs6crdc_sentaf15", "rs6crdc_sentwm13", "rs6crdc_sentwm15", "rs6crdc_sentwf13", 
+                              "rs6crdc_sentwf15", "rs6crdc_sentbm13", "rs6crdc_sentbm15", "rs6crdc_sentbf13",
+                              "rs6crdc_sentbf15", "rs6crdc_sniswm13", "rs6crdc_sniswm15", "rs6crdc_sniswf13", 
+                              "rs6crdc_sniswf15", "rs6crdc_snisbm13", "rs6crdc_snisbm15", "rs6crdc_snisbf13",
+                              "rs6crdc_snisbf15", "rs6crdc_snoswm13", "rs6crdc_snoswm15", "rs6crdc_snoswf13", 
+                              "rs6crdc_snoswf15", "rs6crdc_snosbm13", "rs6crdc_snosbm15", "rs6crdc_snosbf13", 
+                              "rs6crdc_snosbf15", "rs6crdc_snomwm13", "rs6crdc_snomwm15", "rs6crdc_snomwf13", 
+                              "rs6crdc_snomwf15", "rs6crdc_snombm13", "rs6crdc_snombm15", "rs6crdc_snombf13", 
+                              "rs6crdc_snombf15", "rs6crdc_sneswm13", "rs6crdc_sneswm15", "rs6crdc_sneswf13", 
+                              "rs6crdc_sneswf15", "rs6crdc_snesbm13", "rs6crdc_snesbm15", "rs6crdc_snesbf13", 
+                              "rs6crdc_snesbf15", "rs6crdc_snenwm13", "rs6crdc_snenwm15", "rs6crdc_snenwf13",
+                              "rs6crdc_snenwf15", "rs6crdc_snenbm13", "rs6crdc_snenbm15", "rs6crdc_snenbf13", 
+                              "rs6crdc_snenbf15", "rs6crdc_snlewm13", "rs6crdc_snlewm15", "rs6crdc_snlewf13", 
+                              "rs6crdc_snlewf15", "rs6crdc_snlebm13", "rs6crdc_snlebm15", "rs6crdc_snlebf13", 
+                              "rs6crdc_snlebf15", "rs6crdc_sgftwm13", "rs6crdc_sgftwm15", "rs6crdc_sgftwf13", 
+                              "rs6crdc_sgftwf15", "rs6crdc_sgftbm13", "rs6crdc_sgftbm15", "rs6crdc_sgftbf13", 
+                              "rs6crdc_sgftbf15", "rs6crdc_tftetc13", "rs6crdc_tftetc15", "rs6crdc_tcertc13", 
+                              "rs6crdc_tcertc15", "rs6crdc_t1yttc13", "rs6crdc_t1yttc15", "rs6crdc_counac13", 
+                              "rs6crdc_counac15", "rs6crdc_fasald13", "rs6crdc_fasald15", "rs6crdc_ftsald13",
+                              "rs6crdc_ftsald15", "rs6crdc_fnpepd13", "rs6crdc_fnpepd15", "rs6crdc_rabhbr13")
+## 7. stanford education data----
+seda <- read_dta("/Volumes/FragileFamilies/Data/new_contract_data_sep23/ff_dis_seda_2019_pub.dta")
+#retain only needed variables
+seda_reduced <- dplyr::select(seda, 
+                              "idnum", "rs5pseudoLEA", "rs6pseudoLEA", "rs5seda_wht_pooled", "rs5seda_blk_pooled",
+                              "rs5seda_expblk_blk", "rs5seda_expblk_wht", "rs5seda_expwht_blk", "rs5seda_expwht_wht",
+                              "rs5seda_hswhtblk_pooled", "rs5seda_mn_avg_ol_wbg_poolGCS", "rs6seda_wht_pooled",
+                              "rs6seda_blk_pooled", "rs6seda_expblk_blk", "rs6seda_expblk_wht", "rs6seda_expwht_blk",
+                              "rs6seda_expwht_wht", "rs6seda_hswhtblk_pooled", "rs6seda_mn_avg_ol_wbg_poolGCS", 
+                              "rs6seda_perblk_pooled", "rs6seda_perwht_pooled", "rs5seda_perblk_pooled", "rs5seda_perwht_pooled", 
+                              "rs5seda_ppexp_tot_pooled","rs6seda_ppexp_tot_pooled", "rs6seda_ppexp_inst_pooled", 
+                              "rs5seda_ppexp_inst_pooled", "rs5seda_pprev_tot_pooled", "rs6seda_pprev_tot_pooled", 
+                              "rs5seda_hsflnfl_pooled", "rs5seda_perrl_pooled", "rs5seda_perfrl_pooled")
+## 8. school supplement data----
+supp_new <- read_dta("/Volumes/FragileFamilies/Data/new_contract_data_sep23/ff_sch_nces_g1y9y15_pub.dta")
+#retain only needed variables 
+supp_reduced <- dplyr::select(supp_new, "idnum", "rs5nces_schyr", "rs6nces_schyr", "rs5nces_schooltype", "rs6nces_schooltype", 
+                              "rs5nces_0506_titlei", "rs5nces_0607_titlei", "rs5nces_0708_titlei", "rs5nces_0809_titlei",
+                              "rs5nces_0910_titlei", "rs5nces_0506_schtitlei", "rs5nces_0607_schtitlei", "rs5nces_0708_schtitlei",
+                              "rs5nces_0809_schtitlei", "rs5nces_0910_schtitlei", "rs5nces_0506_pctfreelch", "rs5nces_0607_pctfreelch",
+                              "rs5nces_0708_pctfreelch", "rs5nces_0809_pctfreelch", "rs5nces_0910_pctfreelch", "rs5nces_0506_pctredlch",
+                              "rs5nces_0607_pctredlch", "rs5nces_0708_pctredlch", "rs5nces_0809_pctredlch", "rs5nces_0910_pctredlch",
+                              "rs6nces_1314_titlei", "rs6nces_1415_titlei", "rs6nces_1516_titlei", "rs6nces_1617_titlei",
+                              "rs6nces_1314_schtitlei", "rs6nces_1415_schtitlei", "rs6nces_1516_schtitlei", "rs6nces_1617_schtitlei",
+                              "rs6nces_1314_pctfreelch", "rs6nces_1415_pctfreelch", "rs6nces_1516_pctfreelch", "rs6nces_1617_pctfreelch",
+                              "rs6nces_1314_pctredlch", "rs6nces_1415_pctredlch", "rs6nces_1516_pctredlch", "rs6nces_1617_pctredlch")
