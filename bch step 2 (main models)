@@ -1,0 +1,337 @@
+## black: main GrimAge ----
+bch_step2 <- mplusObject(
+  TITLE = "Step3 (MANUAL 3-STEP ML APPROACH)",
+  VARIABLE ="
+    usevar = BCHW1-BCHW3 ageW6 ageW5 FEMALE eduY9 eduY9 m1city chip 
+            grm_csba momsmk_d  fibw5 epiw5 fibw6 epiw6
+            tpbfpl00 incpovY9 ;
+    missing are all (9999);
+    classes = C(3);
+    training = BCHW1-BCHW3(bch); 
+    auxiliary = cls N;
+    cluster=m1city;
+    DEFINE: center ageW5 ageW6 eduY9 FEMALE chip momsmk_d 
+  fibw5 epiw5 fibw6 epiw6 tpbfpl00 incpovY9 
+  (grandmean);", 
+  ANALYSIS = "
+    estimator = mlr;
+    type = mixture complex;
+    starts 1000 150;
+    processors = 8;",
+  MODEL = glue("
+  %OVERALL%
+  c on AgeW5 eduy9 FEMALE ;
+  grm_csba ON ageW5 ageW6 eduY9 FEMALE chip momsmk_d fibw5 epiw5 fibw6 epiw6
+  tpbfpl00 incpovY9 ; 
+  grm_csba; 
+  
+  %C#1% 
+  grm_csba ON ageW5 ageW6 eduY9 FEMALE chip momsmk_d fibw5 epiw5 fibw6 epiw6
+  tpbfpl00 incpovY9; 
+  [grm_csba] (m1);
+  grm_csba;
+  
+  %C#2%
+  grm_csba ON ageW5 ageW6 eduY9 FEMALE chip momsmk_d fibw5 epiw5 fibw6 epiw6
+  tpbfpl00 incpovY9; 
+  [grm_csba] (m2); 
+  grm_csba;
+  
+  %C#3% 
+  grm_csba ON ageW5 ageW6 eduY9 FEMALE chip momsmk_d fibw5 epiw5 fibw6 epiw6
+  tpbfpl00 incpovY9; 
+  [grm_csba] (m3);
+  grm_csba;
+  "),
+  
+  MODELCONSTRAINT = "
+  ! BMI tests of difference between white classes
+  NEW (grim_c12); grim_c12 = m2-m1;
+  NEW (grim_c13); grim_c13 = m3-m1; 
+  NEW (grim_c23); grim_c23 = m2-m3;",
+  MODELTEST = "
+  m1=m3;
+  m2=m3;
+  ", 
+  OUTPUT = "TECH1 TECH4 STANDARDIZED CINTERVAL;",
+  SAVEDATA = 
+    "file is grim_step2.dat;
+  save is cprob;",
+  usevariables = colnames(savedata_black_main_2), 
+  rdata = savedata_black_main_2)
+bch_step2_fit <- mplusModeler(bch_step2, 
+                              dataout=here("final/B/r1/main", "grim.dat"), 
+                              modelout=here("final/B/r1/main", "grim.inp"), 
+                              check=TRUE, run=TRUE, hashfilename=FALSE)
+## black: main PhenoAge ----
+bch_step2 <- mplusObject(
+  TITLE = "Step3 (MANUAL 3-STEP ML APPROACH)",
+  VARIABLE ="
+    usevar = BCHW1-BCHW3 ageW6 ageW5 FEMALE eduY9 eduY9 m1city chip fibw6 epiw6
+            phe_csba  momsmk_d fibw5 epiw5 tpbfpl00 incpovY9 ;
+    missing are all (9999);
+    classes = C(3);
+    training = BCHW1-BCHW3(bch); 
+    cluster=m1city;
+    DEFINE: center ageW5 AgeW6 eduY9 FEMALE chip momsmk_d 
+  fibw6 epiw6 fibw5 epiw5 tpbfpl00 incpovY9 
+  (grandmean);", 
+  ANALYSIS = "
+    estimator = mlr;
+    type = mixture complex;
+    starts 1000 150;
+    processors = 8;",
+  MODEL = glue("
+  %OVERALL%
+  c on AgeW5 eduy9 FEMALE;
+  phe_csba ON ageW5 ageW6 eduY9 FEMALE chip momsmk_d fibw6 epiw6 fibw5 epiw5
+  tpbfpl00 incpovY9 ; 
+  phe_csba; 
+  
+  %C#1% 
+  phe_csba ON ageW5 ageW6 eduY9 FEMALE chip momsmk_d fibw6 epiw6 fibw5 epiw5
+  tpbfpl00 incpovY9 ; 
+  [phe_csba] (m1);
+  phe_csba;
+  
+  %C#2%
+  phe_csba ON ageW5 ageW6 eduY9 FEMALE chip momsmk_d fibw6 epiw6 fibw5 epiw5
+  tpbfpl00 incpovY9 ; 
+  [phe_csba] (m2); 
+  phe_csba;
+  
+  %C#3% 
+  phe_csba  ON ageW5 ageW6 eduY9 FEMALE chip momsmk_d fibw6 epiw6 fibw5 epiw5
+  tpbfpl00 incpovY9 ; 
+  [phe_csba] (m3);
+  phe_csba;"),
+  
+  MODELCONSTRAINT = "
+  ! BMI tests of difference between white classes
+  NEW (phe_c12); phe_c12 = m2-m1; 
+  NEW (phe_c13); phe_c13 = m1-m3;
+  NEW (phe_c23); phe_c23 = m2-m3;",
+  MODELTEST = "
+  m1=m3;
+  m2=m3;
+  ", 
+  OUTPUT = "TECH4 STANDARDIZED CINTERVAL;",
+  usevariables = colnames(savedata_black_main), 
+  rdata = savedata_black_main)
+bch_step2_fit <- mplusModeler(bch_step2, 
+                              dataout=here("final/B/r1/main", "phe.dat"), 
+                              modelout=here("final/B/r1/main", "phe.inp"), 
+                              check=TRUE, run=TRUE, hashfilename=FALSE)
+## black: main DudedinPACE ----
+bch_step2 <- mplusObject(
+  TITLE = "Step3 (MANUAL 3-STEP ML APPROACH)",
+  VARIABLE ="
+    usevar = BCHW1-BCHW3 ageW5 FEMALE eduY9 m1city fibw5 epiw5
+            pce_csba momsmk_d ageW6 eduY9 chip fibw6 epiw6
+            tpbfpl00 incpovY9 ;
+    missing are all (9999);
+    classes = C(3);
+    training = BCHW1-BCHW3(bch); 
+    cluster=m1city;
+    DEFINE: center ageW5 AgeW6 eduY9 FEMALE chip momsmk_d 
+  fibw6 epiw6 fibw5 epiw5 tpbfpl00 incpovY9 
+  (grandmean);", 
+  ANALYSIS = "
+    estimator = mlr;
+    type = mixture complex;
+    starts 1000 150;
+    processors = 8;",
+  MODEL = glue("
+  %OVERALL%
+  c on AgeW5 eduy9 FEMALE;
+  pce_csba ON ageW6 eduY9 FEMALE chip momsmk_d fibw6 epiw6 fibw5 epiw5
+  tpbfpl00 incpovY9 ; 
+  pce_csba; 
+  
+  %C#1% 
+  pce_csba ON ageW6 eduY9 FEMALE chip momsmk_d fibw6 epiw6 fibw5 epiw5
+  tpbfpl00 incpovY9 ; 
+  [pce_csba] (m1);
+  pce_csba;
+  
+  %C#2%
+  pce_csba ON ageW6 eduY9 FEMALE chip momsmk_d fibw6 epiw6 fibw5 epiw5
+  tpbfpl00 incpovY9 ; 
+  [pce_csba] (m2); 
+  pce_csba;
+  
+  %C#3% 
+  pce_csba  ON ageW6 eduY9 FEMALE chip momsmk_d fibw6 epiw6 fibw5 epiw5
+  tpbfpl00 incpovY9 ; 
+  [pce_csba] (m3);
+  pce_csba;"),
+  
+  MODELCONSTRAINT = "
+  ! BMI tests of difference between white classes
+  NEW (d45_c12); d45_c12 = m2-m1; 
+  NEW (d45_c13); d45_c13 = m1-m3;
+  NEW (d45_c23); d45_c23 = m2-m3;",
+  MODELTEST = "
+  m1=m3;
+  m2=m3;
+  ", 
+  OUTPUT = "TECH4 STANDARDIZED CINTERVAL;",
+  usevariables = colnames(savedata_black_main), 
+  rdata = savedata_black_main)
+bch_step2_fit <- mplusModeler(bch_step2, 
+                              dataout=here("final/B/r1/main", "pace.dat"), 
+                              modelout=here("final/B/r1/main", "pace.inp"), 
+                              check=TRUE, run=TRUE, hashfilename=FALSE)
+## white: main GrimAge ----
+bch_step2 <- mplusObject(
+  TITLE = "Step3 (MANUAL 3-STEP ML APPROACH)",
+  VARIABLE ="
+    usevar = BCHW1-BCHW2 ageW6 ageW5 FEMALE eduY9 eduY9 m1city chip 
+            grm_cswa momsmk_d  fibw5 epiw5 fibw6 epiw6 
+            tpbfpl00 incpovY9 ;
+    missing are all (9999);
+    classes = C(2);
+    training = BCHW1-BCHW2(bch); 
+    auxiliary = cls N;
+    cluster=m1city;
+    DEFINE: center ageW5 ageW6 eduY9 FEMALE chip momsmk_d 
+  fibw5 epiw5 fibw6 epiw6  tpbfpl00 incpovY9  (grandmean);", 
+  ANALYSIS = "
+    estimator = mlr;
+    type = mixture complex;
+    starts 1000 150;
+    processors = 8;",
+  MODEL = glue("
+  %OVERALL%
+  c on AgeW5 eduy9 FEMALE;
+  grm_cswa ON ageW5 ageW6 eduY9 FEMALE chip momsmk_d fibw5 epiw5 fibw6 epiw6 
+  tpbfpl00 incpovY9 ; 
+  grm_cswa; 
+  
+  %C#1% 
+  grm_cswa ON ageW5 ageW6 eduY9 FEMALE chip momsmk_d fibw5 epiw5 fibw6 epiw6 
+  tpbfpl00 incpovY9 ; 
+  [grm_cswa] (m1);
+  grm_cswa;
+  
+  %C#2%
+  grm_cswa ON ageW5 ageW6 eduY9 FEMALE chip momsmk_d fibw5 epiw5 fibw6 epiw6 
+  tpbfpl00 incpovY9 ; 
+  [grm_cswa] (m2); 
+  grm_cswa;
+  "),
+  
+  MODELCONSTRAINT = "
+  ! BMI tests of difference between white classes
+  NEW (grim_c12); grim_c12 = m2-m1;",
+  MODELTEST = "
+  m1=m2;
+  ", 
+  OUTPUT = "TECH1 TECH4 STANDARDIZED CINTERVAL;",
+  SAVEDATA = 
+    "file is grim_step2.dat;
+  save is cprob;",
+  usevariables = colnames(savedata_white_main_2), 
+  rdata = savedata_white_main_2)
+bch_step2_fit <- mplusModeler(bch_step2, 
+                              dataout=here("final/W/r1/main", "grim.dat"), 
+                              modelout=here("final/W/r1/main", "grim.inp"), 
+                              check=TRUE, run=TRUE, hashfilename=FALSE)
+## white: main PhenoAge ----
+bch_step2 <- mplusObject(
+  TITLE = "Step3 (MANUAL 3-STEP ML APPROACH)",
+  VARIABLE ="
+    usevar = BCHW1-BCHW2 ageW6 ageW5 FEMALE eduY9 eduY9 m1city chip 
+    fibw5 epiw5 fibw6 epiw6  phe_cswa  momsmk_d tpbfpl00 incpovY9 ;
+    missing are all (9999);
+    classes = C(2);
+    training = BCHW1-BCHW2(bch); 
+    cluster=m1city;
+    DEFINE: center ageW5 AgeW6 eduY9 FEMALE chip momsmk_d 
+  fibw5 epiw5 fibw6 epiw6  tpbfpl00 incpovY9  (grandmean);", 
+  ANALYSIS = "
+    estimator = mlr;
+    type = mixture complex;
+    starts 1000 150;
+    processors = 8;",
+  MODEL = glue("
+  %OVERALL%
+  c on AgeW5 eduy9 FEMALE;
+  phe_cswa ON ageW5 ageW6 eduY9 FEMALE chip momsmk_d fibw5 epiw5 fibw6 epiw6 
+  tpbfpl00 incpovY9 ; 
+  phe_cswa; 
+  
+  %C#1% 
+  phe_cswa ON ageW5 ageW6 eduY9 FEMALE chip momsmk_d fibw5 epiw5 fibw6 epiw6 
+  tpbfpl00 incpovY9 ; 
+  [phe_cswa] (m1);
+  phe_cswa;
+  
+  %C#2%
+  phe_cswa ON ageW5 ageW6 eduY9 FEMALE chip momsmk_d fibw5 epiw5 fibw6 epiw6 
+  tpbfpl00 incpovY9 ; 
+  [phe_cswa] (m2); 
+  phe_cswa;"),
+  
+  MODELCONSTRAINT = "
+  ! BMI tests of difference between white classes
+  NEW (phe_c12); phe_c12 = m2-m1; ",
+  MODELTEST = "
+  m1=m2;", 
+  OUTPUT = "TECH4 STANDARDIZED CINTERVAL;",
+  usevariables = colnames(savedata_white_main), 
+  rdata = savedata_white_main)
+bch_step2_fit <- mplusModeler(bch_step2, 
+                              dataout=here("final/W/r1/main", "phe.dat"), 
+                              modelout=here("final/W/r1/main", "phe.inp"), 
+                              check=TRUE, run=TRUE, hashfilename=FALSE)
+## white: main DudedinPACE ----
+bch_step2 <- mplusObject(
+  TITLE = "Step3 (MANUAL 3-STEP ML APPROACH)",
+  VARIABLE ="
+    usevar = BCHW1-BCHW2 ageW5 FEMALE eduY9 m1city 
+            pce_cswa momsmk_d ageW6 eduY9 chip fibw5 epiw5 fibw6 epiw6 
+            tpbfpl00 incpovY9 ;
+    missing are all (9999);
+    classes = C(2);
+    training = BCHW1-BCHW2(bch); 
+    cluster=m1city;
+    DEFINE: center ageW5 AgeW6 eduY9 FEMALE chip momsmk_d 
+  fibw5 epiw5 fibw6 epiw6  tpbfpl00 incpovY9 
+  (grandmean);", 
+  ANALYSIS = "
+    estimator = mlr;
+    type = mixture complex;
+    starts 1000 150;
+    processors = 8;",
+  MODEL = glue("
+  %OVERALL%
+  c on AgeW5 eduy9 FEMALE;
+  pce_cswa ON ageW6 eduY9 FEMALE chip momsmk_d fibw5 epiw5 fibw6 epiw6 
+  tpbfpl00 incpovY9 ; 
+  pce_cswa; 
+  
+  %C#1% 
+  pce_cswa ON ageW6 eduY9 FEMALE chip momsmk_d fibw5 epiw5 fibw6 epiw6 
+  tpbfpl00 incpovY9 ; 
+  [pce_cswa] (m1);
+  pce_cswa;
+  
+  %C#2%
+  pce_cswa ON ageW6 eduY9 FEMALE chip momsmk_d fibw5 epiw5 fibw6 epiw6 
+  tpbfpl00 incpovY9 ; 
+  [pce_cswa] (m2); 
+  pce_cswa;"),
+  
+  MODELCONSTRAINT = "
+  ! BMI tests of difference between white classes
+  NEW (d45_c12); d45_c12 = m2-m1; ",
+  MODELTEST = "
+  m1=m2;  ", 
+  OUTPUT = "TECH4 STANDARDIZED CINTERVAL;",
+  usevariables = colnames(savedata_white_main), 
+  rdata = savedata_white_main)
+bch_step2_fit <- mplusModeler(bch_step2, 
+                              dataout=here("final/W/r1/main", "pace.dat"), 
+                              modelout=here("final/W/r1/main", "pace.inp"), 
+                              check=TRUE, run=TRUE, hashfilename=FALSE)
