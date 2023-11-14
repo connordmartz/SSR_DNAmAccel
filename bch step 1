@@ -1,0 +1,109 @@
+### black: BCH step 1 ----
+m_step1_black <- mplusObject(
+  VARIABLE = 
+    "categorical = segd49 segs49 sesseg49 seslq49
+                 nogt9 teach49  sal49_r first49
+                 ach49 dis49 bull9cat;
+      usevar = segd49 segs49 sesseg49 seslq49
+                 nogt9 teach49  sal49_r first49
+                 ach49 dis49 bull9cat;
+      idvariable = idnum;
+      cluster = rs5schidp;
+      auxiliary = race ageW5 female segtrct9
+                  eduY9 momsmk_d m1city ch5bmiz epiw5
+                  fibw5 pbe9b phe9b grim9b pa459zb 
+                  k5h1 p5h1 k6d3 p6b1 incpovY9 tpbfpl00 ck6bmiz
+                  chip epiw6 fibw6 ageW6 eduY15 pbe15b phe15b
+                  grim15b pa4515zb tpbfpl15 incpovY15
+                  grm_delt phe_delt pce_delt
+                  phe_csba grm_csba pce_csba pcezcsba
+                  ped_csba tm5pblck tm5pwhte lunch9 frl_d
+                  bmi_rcs crh_rcs, prh_rcs; 
+      classes = c(3);",
+  ANALYSIS = 
+    "estimator = mlr; 
+     type = mixture complex;
+     !starts = 3000 750; 
+     processors = 8(STARTS);
+     OPTSEED = 661978;
+     LRTSTARTS = 0 0 300 75;
+  ",
+  SAVEDATA = "
+        File=bch_black_main.dat;
+        Save=bchweights;
+        Missflag=9999;", 
+  PLOT = 
+    "type = plot3; 
+     series = segd49 segs49 sesseg49 seslq49
+                 nogt9 teach49  sal49_r first49
+                 ach49 dis49 bull9cat(*);",
+  usevariables = colnames(black_lca_new2),
+  rdata = black_lca_new2)
+
+m_step1_fit_black_main <- mplusModeler(m_step1_black,
+                                       dataout=here("final/B/r1/step1", "black_main_step1.dat"),
+                                       modelout=here("final/B/r1/step1", "black_main_step1.inp"),
+                                       check=TRUE, run = TRUE, hashfilename = FALSE)
+
+# Extract saved data from the step 1 model mplusObject named “m_step1_fit
+savedata_black_main <- as.data.frame(m_step1_fit_black_main[["results"]][["savedata"]])
+# Rename the column in savedata for “C” and change to “N”
+colnames(savedata_black_main)[colnames(savedata_black_main)=="C"] <- "N"
+# add extra class describiton variabel to make sure models do not exchange classes or chagne order
+savedata_black_main_2 <- mutate(savedata_black_main,
+                                cls = ifelse(N == 3, 99, 
+                                             ifelse(N == 1, 88, 77)))
+### white: BCH step 1 ----
+m_step1_white <- mplusObject(
+  VARIABLE = 
+    "categorical = segd49 segs49 sesseg49 seslq49
+                     nogt9 teach49  sal49_r first49 
+                     ach49 dis49 bull9cat; 
+      usevar =  segd49 segs49 sesseg49 seslq49
+                     nogt9 teach49  sal49_r first49 
+                     ach49 dis49 bull9cat;
+      idvariable = idnum;
+      cluster = rs5schidp;
+      auxiliary = race ageW5 female segtrct9
+                  eduY9 momsmk_d m1city ch5bmiz epiw5
+                  fibw5 pbe9w phe9w grim9w pa459zw 
+                  k5h1 p5h1 k6d3 p6b1 incpovY9 tpbfpl00 ck6bmiz
+                  chip epiw6 fibw6 ageW6 eduY15 pbe15w phe15w
+                  grim15w pa4515zw tpbfpl15 incpovY15
+                  grm_delt phe_delt pce_delt
+                  phe_cswa grm_cswa pce_cswa pcezcswa ped_cswa
+                  tm5pblck tm5pwhte frl_d; 
+      classes = c(2);",
+  ANALYSIS = 
+    "estimator = mlr; 
+     type = mixture complex;
+     !starts = 3000 750; 
+     processors = 8(STARTS);
+     OPTSEED = 243072;
+     LRTSTARTS = 0 0 300 75;
+  ",
+  SAVEDATA = "
+        File=bch_white_main.dat;
+        Save=bchweights;
+        Missflag=9999;", 
+  PLOT = 
+    "type = plot3; 
+     series = segd49 segs49 sesseg49 seslq49
+                     nogt9 teach49  sal49_r first49 
+                     ach49 dis49 bull9cat(*);",
+  usevariables = colnames(white_lca_new2),
+  rdata = white_lca_new2)
+
+m_step1_fit_white_main <- mplusModeler(m_step1_white,
+                                       dataout=here("final/W/r1/step1", "white_main_step1.dat"),
+                                       modelout=here("final/W/r1/step1", "white_main_step1.inp"),
+                                       check=TRUE, run = TRUE, hashfilename = FALSE)
+
+# Extract saved data from the step 1 model mplusObject named “m_step1_fit
+savedata_white_main <- as.data.frame(m_step1_fit_white_main[["results"]][["savedata"]])
+# Rename the column in savedata for “C” and change to “N”
+colnames(savedata_white_main)[colnames(savedata_white_main)=="C"] <- "N"
+# add extra class describiton variabel to make sure models do not exchange classes or chagne order
+savedata_white_main_2 <- mutate(savedata_white_main,
+                                cls = ifelse(N == 3, 99, 
+                                             ifelse(N == 1, 88, 77)))
