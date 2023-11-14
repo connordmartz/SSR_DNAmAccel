@@ -1,0 +1,1629 @@
+#### DATA CLEANING ####
+## calculate residuals of clocks for full sample ----
+# create separate datasets for W5/W6 epic and 450k
+
+Epic.Dataset.W5 <- core_dnam %>%
+  filter(!is.na(k5me_age)) %>%
+  select(k5me_age, k5me_skinblood, k5me_pedbe, k5me_phenoage, 
+         k5me_grim, k5me_hannum, k5me_pchorvath1, k5me_pchorvath2, 
+         k5me_pchannum, k5me_pcphenoage, k5me_pcgrim, k5me_poam38, 
+         k5me_poam45, k5me_epi, k5me_fib, k5me_ic, idnum)
+Epic.Dataset.W6 <- core_dnam %>%
+  filter(!is.na(k6me_age)) %>%
+  select(k6me_age, k6me_skinblood, k6me_pedbe, k6me_phenoage, 
+         k6me_grim, k6me_hannum, k6me_pchorvath1, k6me_pchorvath2, 
+         k6me_pchannum, k6me_pcphenoage, k6me_pcgrim, k6me_poam38, 
+         k6me_poam45, k6me_epi, k6me_fib, k6me_ic, idnum)
+K450.Dataset.W5 <- core_dnam %>%
+  filter(!is.na(k5mk_age)) %>%
+  select(k5mk_age, k5mk_skinblood, k5mk_pedbe, k5mk_phenoage, 
+         k5mk_grim, k5mk_hannum, k5mk_pchorvath1, k5mk_pchorvath2, 
+         k5mk_pchannum, k5mk_pcphenoage, k5mk_pcgrim, k5mk_poam38, 
+         k5mk_poam45, k5mk_epi, k5mk_fib, k5mk_ic, idnum)
+K450.Dataset.W6 <- core_dnam %>%
+  filter(!is.na(k6mk_age)) %>%
+  select(k6mk_age, k6mk_skinblood, k6mk_pedbe, k6mk_phenoage, 
+         k6mk_grim, k6mk_hannum, k6mk_pchorvath1, k6mk_pchorvath2, 
+         k6mk_pchannum, k6mk_pcphenoage, k6mk_pcgrim, k6mk_poam38, 
+         k6mk_poam45, k6mk_epi, k6mk_fib, k6mk_ic,idnum)
+
+# calculate AgeAccelDNAm for overall sample by wave/chip
+Epic.Dataset.W5 %<>% mutate(skinblood.resid.W5 = residuals(lm(k5me_skinblood ~ k5me_age, data = .)), 
+                            pedbe.resid.W5 = residuals(lm(k5me_pedbe ~ k5me_age, data = .)), 
+                            phenoage.resid.W5 = residuals(lm(k5me_phenoage ~ k5me_age, data = .)), 
+                            grim.resid.W5 = residuals(lm(k5me_grim ~ k5me_age, data = .)),
+                            hannum.resid.W5 = residuals(lm(k5me_hannum ~ k5me_age, data = .)),
+                            pchorvath1.resid.W5 = residuals(lm(k5me_pchorvath1 ~ k5me_age, data = .)),
+                            pchorvath2.resid.W5 = residuals(lm(k5me_pchorvath2 ~ k5me_age, data = .)),
+                            pchannum.resid.W5 = residuals(lm(k5me_pchannum ~ k5me_age, data = .)),
+                            pcphenoage.resid.W5 = residuals(lm(k5me_pcphenoage ~ k5me_age, data = .)),
+                            pcgrim.resid.W5 = residuals(lm(k5me_pcgrim ~ k5me_age, data = .)),
+                            PoAm38.Z.W5 = scale(k5me_poam38) %>% as.vector,
+                            PoAm45.Z.W5 = scale(k5me_poam45) %>% as.vector, 
+                            EpiW5 = 1*k5me_epi,
+                            FibW5 = 1*k5me_fib,
+                            IcW5 = 1*k5me_ic) %>%
+  subset(select = c(idnum, skinblood.resid.W5:IcW5))
+Epic.Dataset.W6 %<>% mutate(skinblood.resid.W6 = residuals(lm(k6me_skinblood ~ k6me_age, data = .)), 
+                            pedbe.resid.W6 = residuals(lm(k6me_pedbe ~ k6me_age, data = .)), 
+                            phenoage.resid.W6 = residuals(lm(k6me_phenoage ~ k6me_age, data = .)), 
+                            grim.resid.W6 = residuals(lm(k6me_grim ~ k6me_age, data = .)),
+                            hannum.resid.W6 = residuals(lm(k6me_hannum ~ k6me_age, data = .)),
+                            pchorvath1.resid.W6 = residuals(lm(k6me_pchorvath1 ~ k6me_age, data = .)),
+                            pchorvath2.resid.W6 = residuals(lm(k6me_pchorvath2 ~ k6me_age, data = .)),
+                            pchannum.resid.W6 = residuals(lm(k6me_pchannum ~ k6me_age, data = .)),
+                            pcphenoage.resid.W6 = residuals(lm(k6me_pcphenoage ~ k6me_age, data = .)),
+                            pcgrim.resid.W6 = residuals(lm(k6me_pcgrim ~ k6me_age, data = .)),
+                            PoAm38.Z.W6 = scale(k6me_poam38) %>% as.vector,
+                            PoAm45.Z.W6 = scale(k6me_poam45) %>% as.vector,
+                            EpiW6 = 1*k6me_epi,
+                            FibW6 = 1*k6me_fib,
+                            IcW6 = 1*k6me_ic) %>%
+  subset(select = c(idnum, skinblood.resid.W6:IcW6))
+K450.Dataset.W5 %<>% mutate(skinblood.resid.W5 = residuals(lm(k5mk_skinblood ~ k5mk_age, data = .)), 
+                            pedbe.resid.W5 = residuals(lm(k5mk_pedbe ~ k5mk_age, data = .)), 
+                            phenoage.resid.W5 = residuals(lm(k5mk_phenoage ~ k5mk_age, data = .)), 
+                            grim.resid.W5 = residuals(lm(k5mk_grim ~ k5mk_age, data = .)),
+                            hannum.resid.W5 = residuals(lm(k5mk_hannum ~ k5mk_age, data = .)),
+                            pchorvath1.resid.W5 = residuals(lm(k5mk_pchorvath1 ~ k5mk_age, data = .)),
+                            pchorvath2.resid.W5 = residuals(lm(k5mk_pchorvath2 ~ k5mk_age, data = .)),
+                            pchannum.resid.W5 = residuals(lm(k5mk_pchannum ~ k5mk_age, data = .)),
+                            pcphenoage.resid.W5 = residuals(lm(k5mk_pcphenoage ~ k5mk_age, data = .)),
+                            pcgrim.resid.W5 = residuals(lm(k5mk_pcgrim ~ k5mk_age, data = .)),
+                            PoAm38.Z.W5 = scale(k5mk_poam38) %>% as.vector,
+                            PoAm45.Z.W5 = scale(k5mk_poam45) %>% as.vector,
+                            EpiW5 = 1*k5mk_epi,
+                            FibW5 = 1*k5mk_fib,
+                            IcW5 = 1*k5mk_ic) %>%
+  subset(select = c(idnum, skinblood.resid.W5:IcW5))
+K450.Dataset.W6 %<>% mutate(skinblood.resid.W6 = residuals(lm(k6mk_skinblood ~ k6mk_age, data = .)), 
+                            pedbe.resid.W6 = residuals(lm(k6mk_pedbe ~ k6mk_age, data = .)), 
+                            phenoage.resid.W6 = residuals(lm(k6mk_phenoage ~ k6mk_age, data = .)), 
+                            grim.resid.W6 = residuals(lm(k6mk_grim ~ k6mk_age, data = .)),
+                            hannum.resid.W6 = residuals(lm(k6mk_hannum ~ k6mk_age, data = .)),
+                            pchorvath1.resid.W6 = residuals(lm(k6mk_pchorvath1 ~ k6mk_age, data = .)),
+                            pchorvath2.resid.W6 = residuals(lm(k6mk_pchorvath2 ~ k6mk_age, data = .)),
+                            pchannum.resid.W6 = residuals(lm(k6mk_pchannum ~ k6mk_age, data = .)),
+                            pcphenoage.resid.W6 = residuals(lm(k6mk_pcphenoage ~ k6mk_age, data = .)),
+                            pcgrim.resid.W6 = residuals(lm(k6mk_pcgrim ~ k6mk_age, data = .)),
+                            PoAm38.Z.W6 = scale(k6mk_poam38) %>% as.vector,
+                            PoAm45.Z.W6 = scale(k6mk_poam45) %>% as.vector, 
+                            EpiW6 = 1*k6mk_epi,
+                            FibW6 = 1*k6mk_fib,
+                            IcW6 = 1*k6mk_ic) %>%
+  subset(select = c(idnum, skinblood.resid.W6:IcW6))
+
+  # join epic and 450k for each wave
+joined.comb.w5 <- bind_rows(Epic.Dataset.W5, K450.Dataset.W5)
+joined.comb.w6 <- bind_rows(Epic.Dataset.W6, K450.Dataset.W6)
+
+joined.comb <- joined.comb.w5 %>%
+  left_join(joined.comb.w6, by = "idnum") %>%
+  filter(!is.na(grim.resid.W6) & !is.na(phenoage.resid.W6) & !is.na(PoAm45.Z.W6)) %>%
+  mutate(phen.EAAres.changescore.comb = residuals(lm(phenoage.resid.W6 ~ phenoage.resid.W5, data = .)),
+         grim.EAAres.changescore.comb = residuals(lm(grim.resid.W6 ~ grim.resid.W5, data = .)),
+         pace.EAAres.changescore.comb = residuals(lm(PoAm45.Z.W6 ~ PoAm45.Z.W5, data = .)),
+         paceZ.EAAres.changescore.comb = scale(pace.EAAres.changescore.comb) %>% as.vector, 
+         pedbe.EAAres.changescore.comb = residuals(lm(pedbe.resid.W6 ~ pedbe.resid.W5, data = .))
+  )
+
+## merge black and white data frames & replace missing values with NA ----
+merged_new <- core_dnam %>%
+  inner_join(geoid_reduced, by = "idnum") %>%
+  inner_join(FF_opp_in, by = "idnum") %>%
+  inner_join(seda_reduced, by = "idnum") %>%
+  inner_join(crdc_reduced, by = "idnum") %>%
+  inner_join(supp_reduced, by = "idnum") %>%
+  inner_join(census00_reduced, by = "idnum") %>%
+  inner_join(joined.comb, by = "idnum") 
+
+# replace missing values with NA
+values_to_replace <- c(-1, -2, -3, -5, -6, -7, -9, "Not in wave", 
+                       "Missing district code", "Not applicable (home schooled)", 
+                       "Private school", "Skip (not in school)")
+merged_new2 <- merged_new
+  for (col in names(merged_new2)) {
+    merged_new2[[col]] <- replace(merged_new2[[col]], merged_new2[[col]] %in% values_to_replace, NA)
+  }
+## variable cleaning/construct LCA indicators ----
+# identify & windsorize clear outliers in number of teachers per school (n=490, 2432, 4644)
+#hist(merged_new2$rs5crdc_tftetc09)
+#summary(merged_new2$rs5crdc_tftetc09)
+#top_values <- tail(merged_new2$rs5crdc_tftetc09[order(merged_new2$rs5crdc_tftetc09, decreasing = FALSE, na.last = NA)], 5)
+#print(top_values)
+merged_new2$rs5crdc_tftetc09[merged_new2$rs5crdc_tftetc09 > 490] <- 134  
+
+# within and between district school segregation measures
+ # calculate n white and black students per school and district (09/11 averaged for Y9, 13/15 averaged for Y15)
+merged_new2 %<>% mutate(
+  nsch09 = ifelse(is.na(merged_new2$rs5crdc_sentaf09) | is.na(merged_new2$rs5crdc_sentam09), NA, 
+                  (merged_new2$rs5crdc_sentaf09 + merged_new2$rs5crdc_sentam09)),
+  nsch11 = ifelse(is.na(merged_new2$rs5crdc_sentaf11) | is.na(merged_new2$rs5crdc_sentam11), NA, 
+                  (merged_new2$rs5crdc_sentaf11 + merged_new2$rs5crdc_sentam11)),
+  nschY9 = ifelse(is.na(nsch09) & (is.na(nsch11)), NA, 
+                  ifelse(is.na(nsch09) & (!is.na(nsch11)), nsch11, 
+                         ifelse(!is.na(nsch09) & (is.na(nsch11)), nsch09, ((nsch09 + nsch11)/2)))),
+  nschwht09 = ifelse(is.na(merged_new2$rs5crdc_sentwm09) | is.na(merged_new2$rs5crdc_sentwf09), NA, 
+                     (merged_new2$rs5crdc_sentwm09 + merged_new2$rs5crdc_sentwf09)), 
+  nschwht11 = ifelse(is.na(merged_new2$rs5crdc_sentwm11) | is.na(merged_new2$rs5crdc_sentwf11), NA, 
+                     (merged_new2$rs5crdc_sentwm11 + merged_new2$rs5crdc_sentwf11)),  
+  nschwhtY9 = ifelse(is.na(nschwht09) & (is.na(nschwht11)), NA, 
+                     ifelse(is.na(nschwht09) & (!is.na(nschwht11)), nschwht11, 
+                            ifelse(!is.na(nschwht09) & (is.na(nschwht11)), nschwht09, ((nschwht09 + nschwht11)/2)))),
+  nschblk09 = ifelse(is.na(merged_new2$rs5crdc_sentbm09) | is.na(merged_new2$rs5crdc_sentbf09), NA, 
+                     (merged_new2$rs5crdc_sentbm09 + merged_new2$rs5crdc_sentbf09)), 
+  nschblk11 = ifelse(is.na(merged_new2$rs5crdc_sentbm11) | is.na(merged_new2$rs5crdc_sentbf11), NA, 
+                     (merged_new2$rs5crdc_sentbm11 + merged_new2$rs5crdc_sentbf11)),
+  nschblkY9 = ifelse(is.na(nschblk09) & (is.na(nschblk11)), NA, 
+                     ifelse(is.na(nschblk09) & (!is.na(nschblk11)), nschblk11, 
+                            ifelse(!is.na(nschblk09) & (is.na(nschblk11)), nschblk09, ((nschblk09 + nschblk11)/2)))),
+  nsch13 = ifelse(is.na(merged_new2$rs6crdc_sentaf13) | is.na(merged_new2$rs6crdc_sentam13), NA, 
+                  (merged_new2$rs6crdc_sentaf13 + merged_new2$rs6crdc_sentam13)),
+  nsch15 = ifelse(is.na(merged_new2$rs6crdc_sentaf15) | is.na(merged_new2$rs6crdc_sentam15), NA, 
+                  (merged_new2$rs6crdc_sentaf15 + merged_new2$rs6crdc_sentam15)),
+  nschY15 = ifelse(is.na(nsch13) & (is.na(nsch15)), NA, 
+                   ifelse(is.na(nsch13) & (!is.na(nsch15)), nsch15, 
+                          ifelse(!is.na(nsch13) & (is.na(nsch15)), nsch13, ((nsch13 + nsch15)/2)))),
+  nschwht13 = ifelse(is.na(merged_new2$rs6crdc_sentwm13) | is.na(merged_new2$rs6crdc_sentwf13), NA, 
+                     (merged_new2$rs6crdc_sentwm13 + merged_new2$rs6crdc_sentwf13)), 
+  nschwht15 = ifelse(is.na(merged_new2$rs6crdc_sentwm15) | is.na(merged_new2$rs6crdc_sentwf15), NA, 
+                     (merged_new2$rs6crdc_sentwm15 + merged_new2$rs6crdc_sentwf15)),  
+  nschwhtY15 = ifelse(is.na(nschwht13) & (is.na(nschwht15)), NA, 
+                      ifelse(is.na(nschwht13) & (!is.na(nschwht15)), nschwht15, 
+                             ifelse(!is.na(nschwht13) & (is.na(nschwht15)), nschwht13, ((nschwht13 + nschwht15)/2)))),
+  nschblk13 = ifelse(is.na(merged_new2$rs6crdc_sentbm13) | is.na(merged_new2$rs6crdc_sentbf13), NA, 
+                     (merged_new2$rs6crdc_sentbm13 + merged_new2$rs6crdc_sentbf13)), 
+  nschblk15 = ifelse(is.na(merged_new2$rs6crdc_sentbm15) | is.na(merged_new2$rs6crdc_sentbf15), NA, 
+                     (merged_new2$rs6crdc_sentbm15 + merged_new2$rs6crdc_sentbf15)),
+  nschblkY15 = ifelse(is.na(nschblk13) & (is.na(nschblk15)), NA, 
+                      ifelse(is.na(nschblk13) & (!is.na(nschblk15)), nschblk15, 
+                             ifelse(!is.na(nschblk13) & (is.na(nschblk15)), nschblk13, ((nschblk13 + nschblk15)/2)))),             
+  #  district variables are not averaged bc the SEDA dataset provided data specifically for Y9 and Y15            
+  ndisY9 = rs5seda_wht_pooled + rs5seda_blk_pooled,  # n white  +  black students per school district (Y9)
+  ndisY15 = rs6seda_wht_pooled + rs6seda_blk_pooled, # n white  +  black students per school district (Y15) 
+  # rename
+  pblkdis9 = 1*rs5seda_perblk_pooled, 
+  pblkdis15 = 1*rs6seda_perblk_pooled, 
+  pwhtdis9 = 1*rs5seda_perwht_pooled, 
+  pwhtdis15 = 1*rs6seda_perwht_pooled, 
+  ndiswhtY9 = 1*rs5seda_wht_pooled,     #rename n white students in district (Y9)
+  ndiswhtY15 = 1*rs6seda_wht_pooled,    #rename n white students in district (Y15)
+  ndisblkY9 = 1*rs5seda_blk_pooled,     #rename n black students in district (Y9)
+  ndisblkY15 = 1*rs6seda_blk_pooled,    #rename n black students in district (Y15)
+  # calculate black-white isolation for segregation within schools (seg between schools in a district already in dataset)
+  pblkschY9 = (nschblkY9 / nschY9),     # school percent black students in Y9
+  pblkschY15 = (nschblkY15 / nschY15),  # school percent black students in Y15
+  pdblkY9 = (ndisblkY9 / ndisY9),       # district percent black students in Y9
+  pdblkY15 = (ndisblkY15 / ndisY15),    # district percent black students in Y15
+  pwhtschY9 = (nschwhtY9 / nschY9),     # school percent white students in Y9
+  pwhtschY15 = (nschwhtY15 / nschY15),  # school percent white students in Y15
+  pdwhtY9 = (ndiswhtY9 / ndisY9),       # district percent white students in Y9
+  pdwhtY15 = (ndiswhtY15 / ndisY15),    # district percent white students in Y15
+  isosch9 = (nschblkY9 / nschY9) / (ndisblkY9 / ndisY9),      # ratio of proportion black students in school to proportion black in district Y9 
+  isosch15 = (nschblkY15 / nschY15) / (ndisblkY15 / ndisY15), # ratio of proportion black students in school to proportion black in district Y15 
+  segdis9 = 1*rs5seda_hswhtblk_pooled, 
+  segdis15 = 1*rs6seda_hswhtblk_pooled,
+  segtrct9 = 1*rgm5opin_ccvcs_race_theil_2000,
+# school discipline with and without services
+ # black-white ratios in expulsion rates
+ # calculate proportion of student body who received expulsion by race and year (09/11 averaged for Y9, 13/15 averaged for Y15, an approach that is used for subsequent calculations)
+  nexpblk09 = ifelse(is.na(merged_new2$rs5crdc_snesbm09) | (is.na(merged_new2$rs5crdc_snesbf09) 
+                                                         | (is.na(merged_new2$rs5crdc_snenbm09) | (is.na(merged_new2$rs5crdc_snenbf09)))), NA, 
+                     (merged_new2$rs5crdc_snesbm09 + merged_new2$rs5crdc_snesbf09 + merged_new2$rs5crdc_snenbm09 + merged_new2$rs5crdc_snenbf09)), 
+  nexpblk11 = ifelse(is.na(merged_new2$rs5crdc_snesbm11) | (is.na(merged_new2$rs5crdc_snesbf11) 
+                                                         | (is.na(merged_new2$rs5crdc_snenbm11) | (is.na(merged_new2$rs5crdc_snenbf11)))), NA, 
+                     (merged_new2$rs5crdc_snesbm11 + merged_new2$rs5crdc_snesbf11 + merged_new2$rs5crdc_snenbm11 + merged_new2$rs5crdc_snenbf11)), 
+  nexpblkY9 = ifelse(is.na(nexpblk09) & (is.na(nexpblk11)), NA, 
+                     ifelse(is.na(nexpblk09) & (!is.na(nexpblk11)), nexpblk11, 
+                            ifelse(!is.na(nexpblk09) & (is.na(nexpblk11)), nexpblk09, ((nexpblk09 + nexpblk11)/2)))), 
+  nexpwht09 = ifelse(is.na(merged_new2$rs5crdc_sneswm09) | (is.na(merged_new2$rs5crdc_sneswf09)
+                                                         | (is.na(merged_new2$rs5crdc_snenwm09) | (is.na(merged_new2$rs5crdc_snenwf09)))), NA,
+                     (merged_new2$rs5crdc_sneswm09 + merged_new2$rs5crdc_sneswf09 + merged_new2$rs5crdc_snenwm09 + merged_new2$rs5crdc_snenwf09)),
+  nexpwht11 = ifelse(is.na(merged_new2$rs5crdc_sneswm11) | (is.na(merged_new2$rs5crdc_sneswf11)
+                                                         | (is.na(merged_new2$rs5crdc_snenwm11) | (is.na(merged_new2$rs5crdc_snenwf11)))), NA,
+                     (merged_new2$rs5crdc_sneswm11 + merged_new2$rs5crdc_sneswf11 + merged_new2$rs5crdc_snenwm11 + merged_new2$rs5crdc_snenwf11)),        
+  nexpwhtY9 = ifelse(is.na(nexpwht09) & (is.na(nexpwht11)), NA, 
+                     ifelse(is.na(nexpwht09) & (!is.na(nexpwht11)), nexpwht11, 
+                            ifelse(!is.na(nexpwht09) & (is.na(nexpwht11)), nexpwht09, ((nexpwht09 + nexpwht11)/2)))),
+  pexpblkY9 = 100*(nexpblkY9 / nschblkY9),
+  pexpwhtY9 = 100*(nexpwhtY9 / nschwhtY9),
+  nexpblk13 = ifelse(is.na(merged_new2$rs6crdc_snesbm13) | (is.na(merged_new2$rs6crdc_snesbf13) 
+                                                         | (is.na(merged_new2$rs6crdc_snenbm13) | (is.na(merged_new2$rs6crdc_snenbf13)))), NA, 
+                     (merged_new2$rs6crdc_snesbm13 + merged_new2$rs6crdc_snesbf13 + merged_new2$rs6crdc_snenbm13 + merged_new2$rs6crdc_snenbf13)), 
+  nexpblk15 = ifelse(is.na(merged_new2$rs6crdc_snesbm15) | (is.na(merged_new2$rs6crdc_snesbf15) 
+                                                         | (is.na(merged_new2$rs6crdc_snenbm15) | (is.na(merged_new2$rs6crdc_snenbf15)))), NA, 
+                     (merged_new2$rs6crdc_snesbm15 + merged_new2$rs6crdc_snesbf15 + merged_new2$rs6crdc_snenbm15 + merged_new2$rs6crdc_snenbf15)), 
+  nexpblkY15 = ifelse(is.na(nexpblk13) & (is.na(nexpblk15)), NA, 
+                      ifelse(is.na(nexpblk13) & (!is.na(nexpblk15)), nexpblk15, 
+                             ifelse(!is.na(nexpblk13) & (is.na(nexpblk15)), nexpblk13, ((nexpblk13 + nexpblk15)/2)))), 
+  nexpwht13 = ifelse(is.na(merged_new2$rs6crdc_sneswm13) | (is.na(merged_new2$rs6crdc_sneswf13)
+                                                         | (is.na(merged_new2$rs6crdc_snenwm13) | (is.na(merged_new2$rs6crdc_snenwf13)))), NA,
+                     (merged_new2$rs6crdc_sneswm13 + merged_new2$rs6crdc_sneswf13 + merged_new2$rs6crdc_snenwm13 + merged_new2$rs6crdc_snenwf13)),
+  nexpwht15 = ifelse(is.na(merged_new2$rs6crdc_sneswm15) | (is.na(merged_new2$rs6crdc_sneswf15)
+                                                         | (is.na(merged_new2$rs6crdc_snenwm15) | (is.na(merged_new2$rs6crdc_snenwf15)))), NA,
+                     (merged_new2$rs6crdc_sneswm15 + merged_new2$rs6crdc_sneswf15 + merged_new2$rs6crdc_snenwm15 + merged_new2$rs6crdc_snenwf15)),        
+  nexpwhtY15 = ifelse(is.na(nexpwht13) & (is.na(nexpwht15)), NA, 
+                      ifelse(is.na(nexpwht13) & (!is.na(nexpwht15)), nexpwht15, 
+                             ifelse(!is.na(nexpwht13) & (is.na(nexpwht15)), nexpwht13, ((nexpwht13 + nexpwht15)/2)))),
+  pexpblkY15 = 100*(nexpblkY15 / nschblkY15),
+  pexpwhtY15 = 100*(nexpwhtY15 / nschwhtY15), 
+# scoring approach 0: base ratio
+  ratioblkexpY9 = pexpblkY9 / pexpwhtY9,
+  ratioblkexpY15 = pexpblkY15 / pexpwhtY15,
+# scoring approach 1: ratio, add constant to num and den
+  ratioconblkexpY9 = (.1 + pexpblkY9) / (.1 + pexpwhtY9), 
+  ratioconblkexpY15 = (.1 + pexpblkY15) / (.1 + pexpwhtY15), 
+# scoring approach 2: black-white difference
+  exp9 = pexpblkY9 - pexpwhtY9, 
+  exp15 = pexpblkY15 - pexpwhtY15,
+# black-white ratios in in-school and out-of-school suspensions
+  nsusblk09 = ifelse(is.na(merged_new2$rs5crdc_snisbm09) | (is.na(merged_new2$rs5crdc_snisbf09) 
+                                                         | (is.na(merged_new2$rs5crdc_snosbm09) | (is.na(merged_new2$rs5crdc_snosbf09)))), NA, 
+                     (merged_new2$rs5crdc_snisbm09 + merged_new2$rs5crdc_snisbf09 + merged_new2$rs5crdc_snosbm09 + merged_new2$rs5crdc_snosbf09)), 
+  nsusblk11 = ifelse(is.na(merged_new2$rs5crdc_snisbm11) | (is.na(merged_new2$rs5crdc_snisbf11) 
+                                                         | (is.na(merged_new2$rs5crdc_snosbm11) | (is.na(merged_new2$rs5crdc_snosbf11)))), NA, 
+                     (merged_new2$rs5crdc_snisbm11 + merged_new2$rs5crdc_snisbf11 + merged_new2$rs5crdc_snosbm11 + merged_new2$rs5crdc_snosbf11)), 
+  nsusblkY9 = ifelse(is.na(nsusblk09) & (is.na(nsusblk11)), NA, 
+                     ifelse(is.na(nsusblk09) & (!is.na(nsusblk11)), nsusblk11, 
+                            ifelse(!is.na(nsusblk09) & (is.na(nsusblk11)), nsusblk09, ((nsusblk09 + nsusblk11)/2)))), 
+  nsuswht09 = ifelse(is.na(merged_new2$rs5crdc_sniswm09) | (is.na(merged_new2$rs5crdc_sniswf09)
+                                                         | (is.na(merged_new2$rs5crdc_snoswm09) | (is.na(merged_new2$rs5crdc_snoswf09)))), NA,
+                     (merged_new2$rs5crdc_sniswm09 + merged_new2$rs5crdc_sniswf09 + merged_new2$rs5crdc_snoswm09 + merged_new2$rs5crdc_snoswf09)),
+  nsuswht11 = ifelse(is.na(merged_new2$rs5crdc_sniswm11) | (is.na(merged_new2$rs5crdc_sniswf11)
+                                                         | (is.na(merged_new2$rs5crdc_snoswm11) | (is.na(merged_new2$rs5crdc_snoswf11)))), NA,
+                     (merged_new2$rs5crdc_sniswm11 + merged_new2$rs5crdc_sniswf11 + merged_new2$rs5crdc_snoswm11 + merged_new2$rs5crdc_snoswf11)),        
+  nsuswhtY9 = ifelse(is.na(nsuswht09) & (is.na(nsuswht11)), NA, 
+                     ifelse(is.na(nsuswht09) & (!is.na(nsuswht11)), nsuswht11, 
+                            ifelse(!is.na(nsuswht09) & (is.na(nsuswht11)), nsuswht09, ((nsuswht09 + nsuswht11)/2)))),
+  psusblkY9 = 100*(nsusblkY9 /nschblkY9),
+  psuswhtY9 = 100*(nsuswhtY9 / nschwhtY9), 
+  nsusblk13 = ifelse(is.na(merged_new2$rs6crdc_snisbm13) | (is.na(merged_new2$rs6crdc_snisbf13) 
+                                                         | (is.na(merged_new2$rs6crdc_snosbm13) | (is.na(merged_new2$rs6crdc_snosbf13)))), NA, 
+                     (merged_new2$rs6crdc_snisbm13 + merged_new2$rs6crdc_snisbf13 + merged_new2$rs6crdc_snosbm13 + merged_new2$rs6crdc_snosbf13)), 
+  nsusblk15 = ifelse(is.na(merged_new2$rs6crdc_snisbm15) | (is.na(merged_new2$rs6crdc_snisbf15) 
+                                                         | (is.na(merged_new2$rs6crdc_snosbm15) | (is.na(merged_new2$rs6crdc_snosbf15)))), NA, 
+                     (merged_new2$rs6crdc_snisbm15 + merged_new2$rs6crdc_snisbf15 + merged_new2$rs6crdc_snosbm15 + merged_new2$rs6crdc_snosbf15)), 
+  nsusblkY15 = ifelse(is.na(nsusblk13) & (is.na(nsusblk15)), NA, 
+                      ifelse(is.na(nsusblk13) & (!is.na(nsusblk15)), nsusblk15, 
+                             ifelse(!is.na(nsusblk13) & (is.na(nsusblk15)), nsusblk13, ((nsusblk13 + nsusblk15)/2)))), 
+  nsuswht13 = ifelse(is.na(merged_new2$rs6crdc_sniswm13) | (is.na(merged_new2$rs6crdc_sniswf13)
+                                                         | (is.na(merged_new2$rs6crdc_snoswm13) | (is.na(merged_new2$rs6crdc_snoswf13)))), NA,
+                     (merged_new2$rs6crdc_sniswm13 + merged_new2$rs6crdc_sniswf13 + merged_new2$rs6crdc_snoswm13 + merged_new2$rs6crdc_snoswf13)),
+  nsuswht15 = ifelse(is.na(merged_new2$rs6crdc_sniswm15) | (is.na(merged_new2$rs6crdc_sniswf15)
+                                                         | (is.na(merged_new2$rs6crdc_snenwm15) | (is.na(merged_new2$rs6crdc_snoswf15)))), NA,
+                     (merged_new2$rs6crdc_sniswm15 + merged_new2$rs6crdc_sniswf15 + merged_new2$rs6crdc_snenwm15 + merged_new2$rs6crdc_snoswf15)),        
+  nsuswhtY15 = ifelse(is.na(nsuswht13) & (is.na(nsuswht15)), NA, 
+                      ifelse(is.na(nsuswht13) & (!is.na(nsuswht15)), nsuswht15, 
+                             ifelse(!is.na(nsuswht13) & (is.na(nsuswht15)), nsuswht13, ((nsuswht13 + nsuswht15)/2)))),
+  psusblkY15 = 100*(nsusblkY15 /nschblkY15),
+  psuswhtY15 = 100*(nsuswhtY15 / nschwhtY15), 
+# scoring black-white difference
+  sus9 = psusblkY9 - psuswhtY9, 
+  sus15 = psusblkY15 - psuswhtY15,
+# black-white ratios in law enforcement referrals
+  nlawblk09 = ifelse(is.na(merged_new2$rs5crdc_snlebm09) | (is.na(merged_new2$rs5crdc_snlebf09)), NA, 
+                     (merged_new2$rs5crdc_snlebm09 + merged_new2$rs5crdc_snlebf09)), 
+  nlawblk11 = ifelse(is.na(merged_new2$rs5crdc_snlebm11) | (is.na(merged_new2$rs5crdc_snlebf11)), NA, 
+                     (merged_new2$rs5crdc_snlebm11 + merged_new2$rs5crdc_snlebf11)), 
+  nlawblkY9 = ifelse(is.na(nlawblk09) & (is.na(nlawblk11)), NA, 
+                     ifelse(is.na(nlawblk09) & (!is.na(nlawblk11)), nlawblk11, 
+                            ifelse(!is.na(nlawblk09) & (is.na(nlawblk11)), nlawblk09, ((nlawblk09 + nlawblk11)/2)))), 
+  nlawwht09 = ifelse(is.na(merged_new2$rs5crdc_snlewm09) | (is.na(merged_new2$rs5crdc_snlewf09)), NA,
+                     (merged_new2$rs5crdc_snlewm09 + merged_new2$rs5crdc_snlewf09)),
+  nlawwht11 = ifelse(is.na(merged_new2$rs5crdc_snlewm11) | (is.na(merged_new2$rs5crdc_snlewf11)), NA,
+                     (merged_new2$rs5crdc_snlewm11 + merged_new2$rs5crdc_snlewf11)),        
+  nlawwhtY9 = ifelse(is.na(nlawwht09) & (is.na(nlawwht11)), NA, 
+                     ifelse(is.na(nlawwht09) & (!is.na(nlawwht11)), nlawwht11, 
+                            ifelse(!is.na(nlawwht09) & (is.na(nlawwht11)), nlawwht09, ((nlawwht09 + nlawwht11)/2)))),
+  plawblkY9 = 100*(nlawblkY9 /nschblkY9),
+  plawwhtY9 = 100*(nlawwhtY9 / nschwhtY9), 
+  nlawblk13 = ifelse(is.na(merged_new2$rs6crdc_snlebm13) | (is.na(merged_new2$rs6crdc_snlebf13)), NA, 
+                     (merged_new2$rs6crdc_snlebm13 + merged_new2$rs6crdc_snlebf13)), 
+  nlawblk15 = ifelse(is.na(merged_new2$rs6crdc_snlebm15) | (is.na(merged_new2$rs6crdc_snlebf15)), NA, 
+                     (merged_new2$rs6crdc_snlebm15 + merged_new2$rs6crdc_snlebf15)), 
+  nlawblkY15 = ifelse(is.na(nlawblk13) & (is.na(nlawblk15)), NA, 
+                      ifelse(is.na(nlawblk13) & (!is.na(nlawblk15)), nlawblk15, 
+                             ifelse(!is.na(nlawblk13) & (is.na(nlawblk15)), nlawblk13, ((nlawblk13 + nlawblk15)/2)))), 
+  nlawwht13 = ifelse(is.na(merged_new2$rs6crdc_snlewm13) | (is.na(merged_new2$rs6crdc_snlewf13)), NA,
+                     (merged_new2$rs6crdc_snlewm13 + merged_new2$rs6crdc_snlewf13)),
+  nlawwht15 = ifelse(is.na(merged_new2$rs6crdc_snlewm15) | (is.na(merged_new2$rs6crdc_snlewf15)), NA,
+                     (merged_new2$rs6crdc_snlewm15 + merged_new2$rs6crdc_snlewf15)),        
+  nlawwhtY15 = ifelse(is.na(nlawwht13) & (is.na(nlawwht15)), NA, 
+                      ifelse(is.na(nlawwht13) & (!is.na(nlawwht15)), nlawwht15, 
+                             ifelse(!is.na(nlawwht13) & (is.na(nlawwht15)), nlawwht13, ((nlawwht13 + nlawwht15)/2)))),
+  plawblkY15 = 100*(nlawblkY15 /nschblkY15),
+  plawwhtY15 = 100*(nlawwhtY15 / nschwhtY15), 
+# scoring black-white difference
+  law9 = plawblkY9 - plawwhtY9, 
+  law15 = plawblkY15 - plawwhtY15,
+# school resources
+  # per pupil total expenditures 
+  expnd_t = rs5seda_ppexp_tot_pooled, 
+# ratio of students to FTE teachers
+  tchY9 = ifelse(is.na(merged_new2$rs5crdc_tftetc09) & (is.na(merged_new2$rs5crdc_tftetc11)), NA,
+                 ifelse(is.na(merged_new2$rs5crdc_tftetc09) & (!is.na(merged_new2$rs5crdc_tftetc11)), merged_new2$rs5crdc_tftetc11, 
+                        ifelse(!is.na(merged_new2$rs5crdc_tftetc09) & (is.na(merged_new2$rs5crdc_tftetc11)), merged_new2$rs5crdc_tftetc09,
+                               ((merged_new2$rs5crdc_tftetc09 + merged_new2$rs5crdc_tftetc11) / 2)))), 
+  tchY15 = ifelse(is.na(merged_new2$rs6crdc_tftetc13) & (is.na(merged_new2$rs6crdc_tftetc15)), NA,
+                  ifelse(is.na(merged_new2$rs6crdc_tftetc13) & (!is.na(merged_new2$rs6crdc_tftetc15)), merged_new2$rs6crdc_tftetc15, 
+                         ifelse(!is.na(merged_new2$rs6crdc_tftetc13) & (is.na(merged_new2$rs6crdc_tftetc15)), merged_new2$rs6crdc_tftetc13,
+                                ((merged_new2$rs6crdc_tftetc13 + merged_new2$rs6crdc_tftetc15) / 2)))), 
+  teach9 =  nschY9 / tchY9, 
+  teach15 = nschY15 / tchY15, 
+# proportion 1st year teachers 
+  firstY9 = ifelse(is.na(merged_new2$rs5crdc_t1yttc09) & (is.na(merged_new2$rs5crdc_t1yttc11)), NA,
+                   ifelse(is.na(merged_new2$rs5crdc_t1yttc09) & (!is.na(merged_new2$rs5crdc_t1yttc11)), merged_new2$rs5crdc_t1yttc11, 
+                          ifelse(!is.na(merged_new2$rs5crdc_t1yttc09) & (is.na(merged_new2$rs5crdc_t1yttc11)), merged_new2$rs5crdc_t1yttc09,
+                                 ((merged_new2$rs5crdc_t1yttc09 + merged_new2$rs5crdc_t1yttc11) / 2)))), 
+  firstY15 = ifelse(is.na(merged_new2$rs6crdc_t1yttc13) & (is.na(merged_new2$rs6crdc_t1yttc15)), NA,
+                    ifelse(is.na(merged_new2$rs6crdc_t1yttc13) & (!is.na(merged_new2$rs6crdc_t1yttc15)), merged_new2$rs6crdc_t1yttc15, 
+                           ifelse(!is.na(merged_new2$rs6crdc_t1yttc13) & (is.na(merged_new2$rs6crdc_t1yttc15)), merged_new2$rs6crdc_t1yttc13,
+                                  ((merged_new2$rs6crdc_t1yttc13 + merged_new2$rs6crdc_t1yttc15) / 2)))), 
+  first9 = firstY9 / tchY9, 
+  first15 = firstY15 / tchY15, 
+# avg teacher salary
+  sal09 = ifelse(merged_new2$rs5crdc_ftsald09 == 0, NA, 
+                 ifelse(merged_new2$rs5crdc_ftsald09 > 6846, merged_new2$rs5crdc_ftsald09/100, merged_new2$rs5crdc_ftsald09)), 
+  sal11 = ifelse(merged_new2$rs5crdc_ftsald11 == 0, NA, merged_new2$rs5crdc_ftsald11), 
+  sal13 = ifelse(merged_new2$rs6crdc_ftsald13 == 0, NA, merged_new2$rs6crdc_ftsald13), 
+  sal15 = ifelse(merged_new2$rs6crdc_ftsald15 == 0, NA, merged_new2$rs6crdc_ftsald15),
+  sal9 = ifelse(is.na(sal09) & (is.na(sal11)), NA, 
+                ifelse(is.na(sal09) & (!is.na(sal11)), (sal11 / merged_new2$rs5crdc_tftetc11),
+                       ifelse(!is.na(sal09) & (is.na(sal11)), (sal09 / merged_new2$rs5crdc_tftetc09), ((sal09 + sal11) / tchY9)))),
+  sal9_inv = -1*sal9, # inverse for plotting purposes
+  sal15 = ifelse(is.na(sal13) & (is.na(sal15)), NA, 
+                 ifelse(is.na(sal13) & (!is.na(sal15)), (sal15 / merged_new2$rs6crdc_tftetc15),
+                        ifelse(!is.na(sal13) & (is.na(sal15)), (sal13 / merged_new2$rs6crdc_tftetc13), ((sal13 + sal15) / tchY15)))),
+  sal15_inv = -1*sal15, # inverse for plotting purposes
+# percent of student body that receives free/reduced price lunch 
+  lunch06 = ifelse(is.na(merged_new2$rs5nces_0506_pctfreelch) | (is.na(merged_new2$rs5nces_0506_pctredlch)), NA, 
+                   merged_new2$rs5nces_0506_pctfreelch + merged_new2$rs5nces_0506_pctredlch),
+  lunch07 = ifelse(is.na(merged_new2$rs5nces_0607_pctfreelch) | (is.na(merged_new2$rs5nces_0607_pctredlch)), NA, 
+                   merged_new2$rs5nces_0607_pctfreelch + merged_new2$rs5nces_0607_pctredlch),
+  lunch08 = ifelse(is.na(merged_new2$rs5nces_0708_pctfreelch) | (is.na(merged_new2$rs5nces_0708_pctredlch)), NA, 
+                   merged_new2$rs5nces_0708_pctfreelch + merged_new2$rs5nces_0708_pctredlch),
+  lunch09 = ifelse(is.na(merged_new2$rs5nces_0809_pctfreelch) | (is.na(merged_new2$rs5nces_0809_pctredlch)), NA, 
+                   merged_new2$rs5nces_0809_pctfreelch + merged_new2$rs5nces_0809_pctredlch),
+  lunch10 = ifelse(is.na(merged_new2$rs5nces_0910_pctfreelch) | (is.na(merged_new2$rs5nces_0910_pctredlch)), NA, 
+                   merged_new2$rs5nces_0910_pctfreelch + merged_new2$rs5nces_0910_pctredlch),
+  lunch14 = ifelse(is.na(merged_new2$rs6nces_1314_pctfreelch) | (is.na(merged_new2$rs6nces_1314_pctredlch)), NA, 
+                   merged_new2$rs6nces_1314_pctfreelch + merged_new2$rs6nces_1314_pctredlch),
+  lunch15 = ifelse(is.na(merged_new2$rs6nces_1415_pctfreelch) | (is.na(merged_new2$rs6nces_1415_pctredlch)), NA, 
+                   merged_new2$rs6nces_1415_pctfreelch + merged_new2$rs6nces_1415_pctredlch),
+  lunch16 = ifelse(is.na(merged_new2$rs6nces_1516_pctfreelch) | (is.na(merged_new2$rs6nces_1516_pctredlch)), NA, 
+                   merged_new2$rs6nces_1516_pctfreelch + merged_new2$rs6nces_1516_pctredlch),
+  lunch17 = ifelse(is.na(merged_new2$rs6nces_1617_pctfreelch) | (is.na(merged_new2$rs6nces_1617_pctredlch)), NA, 
+                   merged_new2$rs6nces_1617_pctfreelch + merged_new2$rs6nces_1617_pctredlch), 
+  ses_seg9 = rs5seda_hsflnfl_pooled, # poverty segregation (district)
+  frl_d = ifelse(is.na(merged_new2$rs5seda_perrl_pooled) | (is.na(merged_new2$rs5seda_perfrl_pooled)), NA,
+                 merged_new2$rs5seda_perrl_pooled + merged_new2$rs5seda_perfrl_pooled))
+
+merged_new2 %<>% mutate(
+  lunch9 = rowMeans(merged_new2[, c("lunch06", "lunch07", "lunch08", "lunch09", "lunch10")], na.rm=TRUE),
+  lunch15 = rowMeans(merged_new2[, c("lunch14","lunch15", "lunch16", "lunch17")], na.rm=TRUE),
+  lqlunch = (lunch9/frl_d),
+# school eligible for Title I funding (if school eligible in any of the years of data available for Y9 or Y15 then 
+# considered 1=yes; if not eligible for all years then considered 0=no)
+  fund9 = ifelse(is.na(merged_new2$rs5nces_0506_titlei) & 
+                   is.na(merged_new2$rs5nces_0607_titlei) & 
+                   is.na(merged_new2$rs5nces_0708_titlei) & 
+                   is.na(merged_new2$rs5nces_0809_titlei) & 
+                   is.na(merged_new2$rs5nces_0910_titlei), NA, 
+                 ifelse (merged_new2$rs5nces_0506_titlei == 1 | 
+                           merged_new2$rs5nces_0607_titlei == 1 | 
+                           merged_new2$rs5nces_0708_titlei == 1 | 
+                           merged_new2$rs5nces_0809_titlei == 1 | 
+                           merged_new2$rs5nces_0910_titlei == 1, 1, 0)),
+  fund15 = ifelse(is.na(merged_new2$rs6nces_1314_titlei) & 
+                    is.na(merged_new2$rs6nces_1415_titlei) & 
+                    is.na(merged_new2$rs6nces_1516_titlei) & 
+                    is.na(merged_new2$rs6nces_1617_titlei), NA, 
+                  ifelse (merged_new2$rs6nces_1314_titlei == 1 | 
+                            merged_new2$rs6nces_1415_titlei == 1 | 
+                            merged_new2$rs6nces_1516_titlei == 1 | 
+                            merged_new2$rs6nces_1617_titlei == 1, 1, 0)),
+# academic achievement
+  # gifted/talented programs offered (dichotomous) (if Yes to either then Yes overall...reflects school quality)
+  gtd9 = ifelse(is.na(merged_new2$rs5crdc_schgft09) & is.na(merged_new2$rs5crdc_schgft11), NA, 
+                ifelse(merged_new2$rs5crdc_schgft09 == 1 | merged_new2$rs5crdc_schgft11 == 1, 1, 0)),
+  gtd15 = ifelse(is.na(merged_new2$rs6crdc_schgft13) & is.na(merged_new2$rs6crdc_schgft15), NA, 
+                 ifelse(merged_new2$rs6crdc_schgft13 == 1 | merged_new2$rs6crdc_schgft15 == 1, 1, 0)),
+# white-black achievement gap in math and reading, pooled across years, grade-cohort standardized
+# scores are in standard deviation unit with 0 being the average across all distriscsts in the US
+  ach9  = 1*rs5seda_mn_avg_ol_wbg_poolGCS, 
+  ach15 = 1*rs6seda_mn_avg_ol_wbg_poolGCS,#))%>%
+# racial harassment
+  bull9 = ifelse(is.na(merged_new2$rs5crdc_rabhbr09) & (is.na(merged_new2$rs5crdc_rabhbr11)), NA, 
+                 ifelse(!is.na(merged_new2$rs5crdc_rabhbr09) & (is.na(merged_new2$rs5crdc_rabhbr11)), merged_new2$rs5crdc_rabhbr09, 
+                        ifelse(is.na(merged_new2$rs5crdc_rabhbr09) & (!is.na(merged_new2$rs5crdc_rabhbr11)), merged_new2$rs5crdc_rabhbr11, 
+                               ((merged_new2$rs5crdc_rabhbr09 + merged_new2$rs5crdc_rabhbr11))))),
+  bull9cat = case_when(
+    bull9 == 0 ~ 1,
+    bull9 >= 1 & bull9 <= 5 ~ 2,
+    bull9 > 5 ~ 3,
+    TRUE ~ NA),
+  bull15 = ifelse(is.na(merged_new2$rs6crdc_rabhbr13) & (is.na(merged_new2$rs6crdc_rabhbr15)), NA, 
+                  ifelse(!is.na(merged_new2$rs6crdc_rabhbr13) & (is.na(merged_new2$rs6crdc_rabhbr15)), merged_new2$rs6crdc_rabhbr13, 
+                         ifelse(is.na(merged_new2$rs6crdc_rabhbr13) & (!is.na(merged_new2$rs6crdc_rabhbr15)), merged_new2$rs6crdc_rabhbr15, 
+                                ((merged_new2$rs6crdc_rabhbr13 + merged_new2$rs6crdc_rabhbr15))))))
+merged_new2 %<>% mutate(
+# covariates
+# Y9 income-poverty (use mothers unless missing, then use fathers)
+  incpovY9 = ifelse(is.na(merged_new2$cm5povco) & (is.na(merged_new2$cf5povco)), NA, 
+                    ifelse(is.na(merged_new2$cm5povco) & (!is.na(merged_new2$cf5povco)), merged_new2$cf5povco, merged_new2$cm5povco)), 
+# Y9 education (use mothers unless missing, then use fathers)      
+  eduY9 = ifelse(is.na(merged_new2$cm5edu) & (is.na(merged_new2$cf5edu)), NA, 
+                 ifelse(is.na(merged_new2$cm5edu) & (!is.na(merged_new2$cf5edu)), merged_new2$cf5edu, merged_new2$cm5edu)), 
+# dichotomous maternal smoking during pregnancy 
+  momsmk_d = ifelse(is.na(merged_new2$m1g4), NA, 
+                    ifelse(merged_new2$m1g4 == 4, 0, 1)), 
+  momsmk = ifelse(is.na(merged_new2$m1g4), NA, 
+                  ifelse(merged_new2$m1g4 == 4, 0, 
+                         ifelse(merged_new2$m1g4 == 3, 1, 
+                                ifelse(merged_new2$m1g4 == 2, 2, 3)))), 
+# Y15 income-poverty and parental education
+  incpovY15 = 1*cp6povco, 
+  eduY15 = 1*cp6edu, 
+# calculate change scores for BMI, parent-rated and child-rated health 
+  bmi_rcs = ifelse(is.na(ch5bmiz) | (is.na(ck6bmiz)), NA, 
+                   residuals(lm(ck6bmiz ~ ch5bmiz, data = .))), 
+  prh_rcs = ifelse(is.na(p6b1) | (is.na(p5h1)), NA, 
+                   residuals(lm(p6b1 ~ p5h1, data = .))), 
+  crh_rcs = ifelse(is.na(k6d3) | (is.na(k5h1)), NA, 
+                   residuals(lm(k6d3 ~ k5h1, data = .))))
+
+                          
+
+## calculate residuals of clocks for black sample ----
+Epic.Dataset.b <- dplyr::select(merged_new2,
+                              "k5me_age", "k5me_skinblood", "k5me_pedbe", "k5me_phenoage", "k5me_grim", 
+                              "k5me_hannum", "k5me_pchorvath1", "k5me_pchorvath2", "k5me_pchannum", 
+                              "k5me_pcphenoage", "k5me_pcgrim", "k5me_poam38", "k5me_poam45", 
+                              "k5me_horvath", "k5me_epi", "k5me_fib", "k5me_ic", 
+                              "k6me_age", "k6me_skinblood", "k6me_pedbe", "k6me_phenoage", "k6me_grim", 
+                              "k6me_hannum", "k6me_pchorvath1", "k6me_pchorvath2", "k6me_pchannum", 
+                              "k6me_pcphenoage", "k6me_pcgrim", "k6me_poam38", "k6me_poam45", 
+                              "k6me_horvath", "k6me_epi", "k6me_fib", "k6me_ic", "idnum") %>%
+  filter(merged_new2$race == 1) %>%
+  filter(complete.cases(.))
+K450.Dataset.b <- dplyr::select(merged_new2,
+                              "k5mk_age", "k5mk_skinblood", "k5mk_pedbe", "k5mk_phenoage", "k5mk_grim", 
+                              "k5mk_hannum", "k5mk_pchorvath1", "k5mk_pchorvath2", "k5mk_pchannum", 
+                              "k5mk_pcphenoage", "k5mk_pcgrim", "k5mk_poam38", "k5mk_poam45", 
+                              "k5mk_horvath", "k5mk_epi", "k5mk_fib", "k5mk_ic", 
+                              "k6mk_age", "k6mk_skinblood", "k6mk_pedbe", "k6mk_phenoage", "k6mk_grim", 
+                              "k6mk_hannum", "k6mk_pchorvath1", "k6mk_pchorvath2", "k6mk_pchannum", 
+                              "k6mk_pcphenoage", "k6mk_pcgrim", "k6mk_poam38", "k6mk_poam45", 
+                              "k6mk_horvath", "k6mk_epi", "k6mk_fib","k6mk_ic","idnum") %>%
+  filter(merged_new2$race == 1)%>%
+  filter(complete.cases(.))
+# EPIC chip
+Epic.Dataset.b %<>% mutate(grim.raw.5b = k5me_grim,
+                           phe.raw.5b = k5me_phenoage, 
+                           pace.raw.5b = k5me_poam45, 
+                           pbe.raw.5b = k5me_pedbe, 
+                           grim.raw.6b = k6me_grim,
+                           phe.raw.6b = k6me_phenoage, 
+                           pace.raw.6b = k6me_poam45, 
+                           pbe.raw.6b = k6me_pedbe, 
+                           horvath.resid.W5.b = residuals(lm(k5me_horvath ~ k5me_age, data = .)), 
+                           skinblood.resid.W5.b = residuals(lm(k5me_skinblood ~ k5me_age, data = .)), 
+                           pedbe.resid.W5.b = residuals(lm(k5me_pedbe ~ k5me_age, data = .)), 
+                           phenoage.resid.W5.b = residuals(lm(k5me_phenoage ~ k5me_age, data = .)), 
+                           grim.resid.W5.b = residuals(lm(k5me_grim ~ k5me_age, data = .)),
+                           hannum.resid.W5.b = residuals(lm(k5me_hannum ~ k5me_age, data = .)),
+                           pchorvath1.resid.W5.b = residuals(lm(k5me_pchorvath1 ~ k5me_age, data = .)),
+                           pchorvath2.resid.W5.b = residuals(lm(k5me_pchorvath2 ~ k5me_age, data = .)),
+                           pchannum.resid.W5.b = residuals(lm(k5me_pchannum ~ k5me_age, data = .)),
+                           pcphenoage.resid.W5.b = residuals(lm(k5me_pcphenoage ~ k5me_age, data = .)),
+                           pcgrim.resid.W5.b = residuals(lm(k5me_pcgrim ~ k5me_age, data = .)),
+                           PoAm38.Z.W5.b = scale(k5me_poam38) %>% as.vector,
+                           PoAm45.Z.W5.b = scale(k5me_poam45) %>% as.vector, 
+                           horvath.resid.W6.b = residuals(lm(k6me_horvath ~ k6me_age, data = .)), 
+                           skinblood.resid.W6.b = residuals(lm(k6me_skinblood ~ k6me_age, data = .)), 
+                           pedbe.resid.W6.b = residuals(lm(k6me_pedbe ~ k6me_age, data = .)), 
+                           phenoage.resid.W6.b = residuals(lm(k6me_phenoage ~ k6me_age, data = .)), 
+                           grim.resid.W6.b = residuals(lm(k6me_grim ~ k6me_age, data = .)),
+                           hannum.resid.W6.b = residuals(lm(k6me_hannum ~ k6me_age, data = .)),
+                           pchorvath1.resid.W6.b = residuals(lm(k6me_pchorvath1 ~ k6me_age, data = .)),
+                           pchorvath2.resid.W6.b = residuals(lm(k6me_pchorvath2 ~ k6me_age, data = .)),
+                           pchannum.resid.W6.b = residuals(lm(k6me_pchannum ~ k6me_age, data = .)),
+                           pcphenoage.resid.W6.b = residuals(lm(k6me_pcphenoage ~ k6me_age, data = .)),
+                           pcgrim.resid.W6.b = residuals(lm(k6me_pcgrim ~ k6me_age, data = .)),
+                           PoAm38.Z.W6.b = scale(k6me_poam38) %>% as.vector,
+                           PoAm45.Z.W6.b = scale(k6me_poam45) %>% as.vector,
+                           chip = 1,
+                           AgeW5 = k5me_age,
+                           AgeW6 = k6me_age,
+# cell proportions (EpiDISH method)
+                           EpiW5b = 1*k5me_epi,
+                           EpiW6b = 1*k6me_epi,
+                           FibW5b = 1*k5me_fib,
+                           FibW6b = 1*k6me_fib,
+                           IcW5b = 1*k5me_ic,
+                           IcW6b = 1*k6me_ic,
+# calculate raw change scores for epigenetic age from age 9 to 15
+                           grm_delt = ifelse(is.na(Epic.Dataset.b$k6me_grim), NA, (Epic.Dataset.b$k6me_grim-Epic.Dataset.b$k5me_grim)), 
+                           phe_delt = ifelse(is.na(Epic.Dataset.b$k6me_phenoage), NA, (Epic.Dataset.b$k6me_phenoage-Epic.Dataset.b$k5me_phenoage)), 
+                           pce_delt = ifelse(is.na(Epic.Dataset.b$k6me_poam45), NA, (Epic.Dataset.b$k6me_poam45-Epic.Dataset.b$k5me_poam45)), 
+                           pbe_delt = ifelse(is.na(Epic.Dataset.b$k6me_pedbe), NA, (Epic.Dataset.b$k6me_pedbe-Epic.Dataset.b$k5me_pedbe)),
+# calculate residual change scores for epigenetic age from age 9 to 15
+                           phen.EAAres.changescore.b = residuals(lm(phenoage.resid.W6.b ~ phenoage.resid.W5.b, data = .)),
+                           grim.EAAres.changescore.b = residuals(lm(grim.resid.W6.b ~ grim.resid.W5.b, data = .)),
+                           pace.EAAres.changescore.b_test_raw = residuals(lm(k6me_poam45 ~ k5me_poam45, data = .)),
+                           pace.EAAres.changescore.b_test = scale(pace.EAAres.changescore.b_test_raw) %>% as.vector,
+                           pace.EAAres.changescore.b = residuals(lm(PoAm45.Z.W6.b ~ PoAm45.Z.W5.b, data = .)),
+                           paceZ.EAAres.changescore.b = scale(pace.EAAres.changescore.b) %>% as.vector, 
+                           pedbe.EAAres.changescore.b = residuals(lm(pedbe.resid.W6.b ~ pedbe.resid.W5.b, data = .)), 
+# residualize out age, chip, & cell composition for bivariate correlations
+                           grim.cor.W5.b = residuals(lm(k5me_grim ~ k5me_age + k5me_epi + k5me_fib, data = .)),
+                           phe.cor.W5.b = residuals(lm(k5me_phenoage ~ k5me_age + k5me_epi + k5me_fib, data = .)),
+                           pace.cor.W5.b = residuals(lm(k5me_poam45 ~ k5me_age + k5me_epi + k5me_fib, data = .)),
+                           pbe.cor.W5.b = residuals(lm(k5me_pedbe ~ k5me_age + k5me_epi + k5me_fib, data = .)),
+                           grim.cor.W6.b = residuals(lm(k6me_grim ~ k6me_age + k6me_epi + k6me_fib, data = .)),
+                           phe.cor.W6.b = residuals(lm(k6me_phenoage ~ k6me_age + k6me_epi + k6me_fib, data = .)),
+                           pace.cor.W6.b = residuals(lm(k6me_poam45 ~ k6me_age + k6me_epi + k6me_fib, data = .)),
+                           pbe.cor.W6.b = residuals(lm(k6me_pedbe ~ k6me_age + k6me_epi + k6me_fib, data = .)),
+                           grim.cor.cs.b = residuals(lm(grim.resid.W6.b ~ grim.resid.W5.b + k5me_age + k6me_age + 
+                                                          k5me_epi + k5me_fib + k6me_epi + k6me_fib, data = .)),
+                           phe.cor.cs.b = residuals(lm(phenoage.resid.W6.b ~ phenoage.resid.W5.b + k5me_age + k6me_age + 
+                                                         k5me_epi + k5me_fib + k6me_epi + k6me_fib, data = .)),
+                           pace.cor.cs.b = residuals(lm(PoAm45.Z.W6.b ~ PoAm45.Z.W5.b + k5me_age + k6me_age + 
+                                                          k5me_epi + k5me_fib + k6me_epi + k6me_fib, data = .)),
+                           pbe.cor.cs.b = residuals(lm(pedbe.resid.W6.b ~ pedbe.resid.W5.b + k5me_age + k6me_age + 
+                                                         k5me_epi + k5me_fib + k6me_epi + k6me_fib, data = .)), 
+                           grmcsb_r = residuals(lm(k6me_grim ~ k5me_grim, data = .)),
+                           phecsb_r = residuals(lm(k6me_phenoage ~ k5me_phenoage, data = .)),
+                           pcecsb_r = residuals(lm(k6me_poam45 ~ k5me_poam45, data = .)),
+                           pbecsb_r = residuals(lm(k6me_pedbe ~ k5me_pedbe, data = .)))
+
+# K450 chip
+K450.Dataset.b %<>% mutate(grim.raw.5b = k5mk_grim,
+                           phe.raw.5b = k5mk_phenoage, 
+                           pace.raw.5b = k5mk_poam45, 
+                           pbe.raw.5b = k5mk_pedbe, 
+                           grim.raw.6b = k6mk_grim,
+                           phe.raw.6b = k6mk_phenoage, 
+                           pace.raw.6b = k6mk_poam45, 
+                           pbe.raw.6b = k6mk_pedbe, 
+                           horvath.resid.W5.b = residuals(lm(k5mk_horvath ~ k5mk_age, data = .)), 
+                           skinblood.resid.W5.b = residuals(lm(k5mk_skinblood ~ k5mk_age, data = .)), 
+                           pedbe.resid.W5.b = residuals(lm(k5mk_pedbe ~ k5mk_age, data = .)), 
+                           phenoage.resid.W5.b = residuals(lm(k5mk_phenoage ~ k5mk_age, data = .)), 
+                           grim.resid.W5.b = residuals(lm(k5mk_grim ~ k5mk_age, data = .)),
+                           hannum.resid.W5.b = residuals(lm(k5mk_hannum ~ k5mk_age, data = .)),
+                           pchorvath1.resid.W5.b = residuals(lm(k5mk_pchorvath1 ~ k5mk_age, data = .)),
+                           pchorvath2.resid.W5.b = residuals(lm(k5mk_pchorvath2 ~ k5mk_age, data = .)),
+                           pchannum.resid.W5.b = residuals(lm(k5mk_pchannum ~ k5mk_age, data = .)),
+                           pcphenoage.resid.W5.b = residuals(lm(k5mk_pcphenoage ~ k5mk_age, data = .)),
+                           pcgrim.resid.W5.b = residuals(lm(k5mk_pcgrim ~ k5mk_age, data = .)),
+                           PoAm38.Z.W5.b = scale(k5mk_poam38) %>% as.vector,
+                           PoAm45.Z.W5.b = scale(k5mk_poam45) %>% as.vector, 
+                           horvath.resid.W6.b = residuals(lm(k6mk_horvath ~ k6mk_age, data = .)), 
+                           skinblood.resid.W6.b = residuals(lm(k6mk_skinblood ~ k6mk_age, data = .)), 
+                           pedbe.resid.W6.b = residuals(lm(k6mk_pedbe ~ k6mk_age, data = .)), 
+                           phenoage.resid.W6.b = residuals(lm(k6mk_phenoage ~ k6mk_age, data = .)), 
+                           grim.resid.W6.b = residuals(lm(k6mk_grim ~ k6mk_age, data = .)),
+                           hannum.resid.W6.b = residuals(lm(k6mk_hannum ~ k6mk_age, data = .)),
+                           pchorvath1.resid.W6.b = residuals(lm(k6mk_pchorvath1 ~ k6mk_age, data = .)),
+                           pchorvath2.resid.W6.b = residuals(lm(k6mk_pchorvath2 ~ k6mk_age, data = .)),
+                           pchannum.resid.W6.b = residuals(lm(k6mk_pchannum ~ k6mk_age, data = .)),
+                           pcphenoage.resid.W6.b = residuals(lm(k6mk_pcphenoage ~ k6mk_age, data = .)),
+                           pcgrim.resid.W6.b = residuals(lm(k6mk_pcgrim ~ k6mk_age, data = .)),
+                           PoAm38.Z.W6.b = scale(k6mk_poam38) %>% as.vector,
+                           PoAm45.Z.W6.b = scale(k6mk_poam45) %>% as.vector,
+                           chip = 0,
+                           AgeW5 = k5mk_age,
+                           AgeW6 = k6mk_age,
+# cell proportions (EpiDISH method)
+                           EpiW5b = 1*k5mk_epi,
+                           EpiW6b = 1*k6mk_epi,
+                           FibW5b = 1*k5mk_fib,
+                           FibW6b = 1*k6mk_fib,
+                           IcW5b = 1*k5mk_ic,
+                           IcW6b = 1*k6mk_ic,
+# calculate raw change scores for epigenetic age from age 9 to 15
+                           grm_delt = ifelse(is.na(K450.Dataset.b$k6mk_grim), NA, (K450.Dataset.b$k6mk_grim-K450.Dataset.b$k5mk_grim)), 
+                           phe_delt = ifelse(is.na(K450.Dataset.b$k6mk_phenoage), NA, (K450.Dataset.b$k6mk_phenoage-K450.Dataset.b$k5mk_phenoage)), 
+                           pce_delt = ifelse(is.na(K450.Dataset.b$k6mk_poam45), NA, (K450.Dataset.b$k6mk_poam45-K450.Dataset.b$k5mk_poam45)),
+                           pbe_delt = ifelse(is.na(K450.Dataset.b$k6mk_pedbe), NA, (K450.Dataset.b$k6mk_pedbe-K450.Dataset.b$k5mk_pedbe)),
+# calculate residual change scores for epigenetic age acceleration from age 9 to 15
+                           phen.EAAres.changescore.b = residuals(lm(phenoage.resid.W6.b ~ phenoage.resid.W5.b, data = .)),
+                           grim.EAAres.changescore.b = residuals(lm(grim.resid.W6.b ~ grim.resid.W5.b, data = .)),
+                           pace.EAAres.changescore.b_test_raw = residuals(lm(k6mk_poam45 ~ k5mk_poam45, data = .)),
+                           pace.EAAres.changescore.b_test = scale(pace.EAAres.changescore.b_test_raw) %>% as.vector,
+                           pace.EAAres.changescore.b = residuals(lm(PoAm45.Z.W6.b ~ PoAm45.Z.W5.b, data = .)), 
+                           paceZ.EAAres.changescore.b = scale(pace.EAAres.changescore.b) %>% as.vector, 
+                           pedbe.EAAres.changescore.b = residuals(lm(pedbe.resid.W6.b ~ pedbe.resid.W5.b, data = .)),
+# residualize out age, chip, & cell composition for bivariate correlations
+                           grim.cor.W5.b = residuals(lm(k5mk_grim ~ k5mk_age + k5mk_epi + k5mk_fib, data = .)),
+                           phe.cor.W5.b = residuals(lm(k5mk_phenoage ~ k5mk_age + k5mk_epi + k5mk_fib, data = .)),
+                           pace.cor.W5.b = residuals(lm(k5mk_poam45 ~ k5mk_age + k5mk_epi + k5mk_fib, data = .)),
+                           pbe.cor.W5.b = residuals(lm(k5mk_pedbe ~ k5mk_age + k5mk_epi + k5mk_fib, data = .)),
+                           grim.cor.W6.b = residuals(lm(k6mk_grim ~ k6mk_age + k6mk_epi + k6mk_fib, data = .)),
+                           phe.cor.W6.b = residuals(lm(k6mk_phenoage ~ k6mk_age + k6mk_epi + k6mk_fib, data = .)),
+                           pace.cor.W6.b = residuals(lm(k6mk_poam45 ~ k6mk_age + k6mk_epi + k6mk_fib, data = .)),
+                           pbe.cor.W6.b = residuals(lm(k6mk_pedbe ~ k6mk_age + k6mk_epi + k6mk_fib, data = .)),
+                           grim.cor.cs.b = residuals(lm(grim.resid.W6.b ~ grim.resid.W5.b + k5mk_age + k6mk_age + 
+                                                          k5mk_epi + k5mk_fib + k6mk_epi + k6mk_fib, data = .)),
+                           phe.cor.cs.b = residuals(lm(phenoage.resid.W6.b ~ phenoage.resid.W5.b + k5mk_age + k6mk_age + 
+                                                         k5mk_epi + k5mk_fib + k6mk_epi + k6mk_fib, data = .)),
+                           pace.cor.cs.b = residuals(lm(PoAm45.Z.W6.b ~ PoAm45.Z.W5.b + k5mk_age + k6mk_age + 
+                                                          k5mk_epi + k5mk_fib + k6mk_epi + k6mk_fib, data = .)),
+                           pbe.cor.cs.b = residuals(lm(pedbe.resid.W6.b ~ pedbe.resid.W5.b + k5mk_age + k6mk_age + 
+                                                         k5mk_epi + k5mk_fib + k6mk_epi + k6mk_fib, data = .)),
+                           grmcsb_r = residuals(lm(k6mk_grim ~ k5mk_grim, data = .)),
+                           phecsb_r = residuals(lm(k6mk_phenoage ~ k5mk_phenoage, data = .)),
+                           pcecsb_r = residuals(lm(k6mk_poam45 ~ k5mk_poam45, data = .)),
+                           pbecsb_r = residuals(lm(k6mk_pedbe ~ k5mk_pedbe, data = .)))
+
+# join black W5 epic and 450k together
+joined.b <- bind_rows(Epic.Dataset.b, K450.Dataset.b)
+
+# keep only age acceleration variables
+joined.b_reduced <- dplyr::select(joined.b,
+                                  "grim.raw.5b", "phe.raw.5b", "pace.raw.5b", "pbe.raw.5b", 
+                                  "grim.raw.6b", "phe.raw.6b", "pace.raw.6b", "pbe.raw.6b", 
+                                  "horvath.resid.W5.b", "skinblood.resid.W5.b", "pedbe.resid.W5.b", "phenoage.resid.W5.b", "grim.resid.W5.b", 
+                                  "hannum.resid.W5.b", "pchorvath1.resid.W5.b", "pchorvath2.resid.W5.b", "pchannum.resid.W5.b", 
+                                  "pcphenoage.resid.W5.b", "pcgrim.resid.W5.b", "PoAm38.Z.W5.b", "PoAm45.Z.W5.b", 
+                                  "horvath.resid.W6.b", "skinblood.resid.W6.b", "pedbe.resid.W6.b", "phenoage.resid.W6.b", "grim.resid.W6.b", 
+                                  "hannum.resid.W6.b", "pchorvath1.resid.W6.b", "pchorvath2.resid.W6.b", "pchannum.resid.W6.b", 
+                                  "pcphenoage.resid.W6.b", "pcgrim.resid.W6.b", "PoAm38.Z.W6.b", "PoAm45.Z.W6.b", "grm_delt",
+                                  "phe_delt", "pce_delt", "pbe_delt", "phen.EAAres.changescore.b", "grim.EAAres.changescore.b", 
+                                  "pace.EAAres.changescore.b", "paceZ.EAAres.changescore.b", "pedbe.EAAres.changescore.b",
+                                  "grim.cor.W5.b", "phe.cor.W5.b", "pace.cor.W5.b", "pbe.cor.W5.b", "grim.cor.W6.b", "phe.cor.W6.b", 
+                                  "pace.cor.W6.b", "pbe.cor.W6.b", "grim.cor.cs.b", "phe.cor.cs.b", "pace.cor.cs.b", "pbe.cor.cs.b",
+                                  "grmcsb_r", "phecsb_r", "pcecsb_r", "pbecsb_r",
+                                  "EpiW5b", "EpiW6b", "FibW5b", "FibW6b", "IcW5b", "IcW6b", "chip", "AgeW5", "AgeW6", "idnum")
+# join with full data set 
+merged_b <- merged_new2 %>%
+  inner_join(joined.b_reduced, by = "idnum")
+
+## calculate residuals of clocks for white sample ----
+Epic.Dataset.w <- dplyr::select(merged_new2,
+                                "k5me_age", "k5me_skinblood", "k5me_pedbe", "k5me_phenoage", "k5me_grim", 
+                                "k5me_hannum", "k5me_pchorvath1", "k5me_pchorvath2", "k5me_pchannum", 
+                                "k5me_pcphenoage", "k5me_pcgrim", "k5me_poam38", "k5me_poam45", 
+                                "k5me_horvath", "k5me_epi", "k5me_fib", "k5me_ic", 
+                                "k6me_age", "k6me_skinblood", "k6me_pedbe", "k6me_phenoage", "k6me_grim", 
+                                "k6me_hannum", "k6me_pchorvath1", "k6me_pchorvath2", "k6me_pchannum", 
+                                "k6me_pcphenoage", "k6me_pcgrim", "k6me_poam38", "k6me_poam45", 
+                                "k6me_horvath", "k6me_epi", "k6me_fib", "k6me_ic", "idnum") %>%
+  filter(merged_new2$race == 0) %>%
+  filter(complete.cases(.))
+K450.Dataset.w <- dplyr::select(merged_new2,
+                                "k5mk_age", "k5mk_skinblood", "k5mk_pedbe", "k5mk_phenoage", "k5mk_grim", 
+                                "k5mk_hannum", "k5mk_pchorvath1", "k5mk_pchorvath2", "k5mk_pchannum", 
+                                "k5mk_pcphenoage", "k5mk_pcgrim", "k5mk_poam38", "k5mk_poam45", 
+                                "k5mk_horvath", "k5mk_epi", "k5mk_fib", "k5mk_ic", 
+                                "k6mk_age", "k6mk_skinblood", "k6mk_pedbe", "k6mk_phenoage", "k6mk_grim", 
+                                "k6mk_hannum", "k6mk_pchorvath1", "k6mk_pchorvath2", "k6mk_pchannum", 
+                                "k6mk_pcphenoage", "k6mk_pcgrim", "k6mk_poam38", "k6mk_poam45", 
+                                "k6mk_horvath", "k6mk_epi", "k6mk_fib","k6mk_ic","idnum") %>%
+  filter(merged_new2$race == 0)%>%
+  filter(complete.cases(.))
+# EPIC chip
+Epic.Dataset.w %<>% mutate(grim.raw.5w = k5me_grim,
+                           phe.raw.5w = k5me_phenoage, 
+                           pace.raw.5w = k5me_poam45, 
+                           pbe.raw.5w = k5me_pedbe, 
+                           grim.raw.6w = k6me_grim,
+                           phe.raw.6w = k6me_phenoage, 
+                           pace.raw.6w = k6me_poam45, 
+                           pbe.raw.6w = k6me_pedbe, 
+                           horvath.resid.W5.w = residuals(lm(k5me_horvath ~ k5me_age, data = .)), 
+                           skinblood.resid.W5.w = residuals(lm(k5me_skinblood ~ k5me_age, data = .)), 
+                           pedbe.resid.W5.w = residuals(lm(k5me_pedbe ~ k5me_age, data = .)), 
+                           phenoage.resid.W5.w = residuals(lm(k5me_phenoage ~ k5me_age, data = .)), 
+                           grim.resid.W5.w = residuals(lm(k5me_grim ~ k5me_age, data = .)),
+                           hannum.resid.W5.w = residuals(lm(k5me_hannum ~ k5me_age, data = .)),
+                           pchorvath1.resid.W5.w = residuals(lm(k5me_pchorvath1 ~ k5me_age, data = .)),
+                           pchorvath2.resid.W5.w = residuals(lm(k5me_pchorvath2 ~ k5me_age, data = .)),
+                           pchannum.resid.W5.w = residuals(lm(k5me_pchannum ~ k5me_age, data = .)),
+                           pcphenoage.resid.W5.w = residuals(lm(k5me_pcphenoage ~ k5me_age, data = .)),
+                           pcgrim.resid.W5.w = residuals(lm(k5me_pcgrim ~ k5me_age, data = .)),
+                           PoAm38.Z.W5.w = scale(k5me_poam38) %>% as.vector,
+                           PoAm45.Z.W5.w = scale(k5me_poam45) %>% as.vector, 
+                           horvath.resid.W6.w = residuals(lm(k6me_horvath ~ k6me_age, data = .)), 
+                           skinblood.resid.W6.w = residuals(lm(k6me_skinblood ~ k6me_age, data = .)), 
+                           pedbe.resid.W6.w = residuals(lm(k6me_pedbe ~ k6me_age, data = .)), 
+                           phenoage.resid.W6.w = residuals(lm(k6me_phenoage ~ k6me_age, data = .)), 
+                           grim.resid.W6.w = residuals(lm(k6me_grim ~ k6me_age, data = .)),
+                           hannum.resid.W6.w = residuals(lm(k6me_hannum ~ k6me_age, data = .)),
+                           pchorvath1.resid.W6.w = residuals(lm(k6me_pchorvath1 ~ k6me_age, data = .)),
+                           pchorvath2.resid.W6.w = residuals(lm(k6me_pchorvath2 ~ k6me_age, data = .)),
+                           pchannum.resid.W6.w = residuals(lm(k6me_pchannum ~ k6me_age, data = .)),
+                           pcphenoage.resid.W6.w = residuals(lm(k6me_pcphenoage ~ k6me_age, data = .)),
+                           pcgrim.resid.W6.w = residuals(lm(k6me_pcgrim ~ k6me_age, data = .)),
+                           PoAm38.Z.W6.w = scale(k6me_poam38) %>% as.vector,
+                           PoAm45.Z.W6.w = scale(k6me_poam45) %>% as.vector,
+                           chip = 1,
+                           AgeW5 = k5me_age,
+                           AgeW6 = k6me_age,
+# cell proportions (EpiDISH method)
+                           EpiW5w = 1*k5me_epi,
+                           EpiW6w = 1*k6me_epi,
+                           FibW5w = 1*k5me_fib,
+                           FibW6w = 1*k6me_fib,
+                           IcW5w = 1*k5me_ic,
+                           IcW6w = 1*k6me_ic,
+# calculate raw change scores for epigenetic age from age 9 to 15
+                           grm_delt = ifelse(is.na(Epic.Dataset.w$k6me_grim), NA, (Epic.Dataset.w$k6me_grim-Epic.Dataset.w$k5me_grim)), 
+                           phe_delt = ifelse(is.na(Epic.Dataset.w$k6me_phenoage), NA, (Epic.Dataset.w$k6me_phenoage-Epic.Dataset.w$k5me_phenoage)), 
+                           pce_delt = ifelse(is.na(Epic.Dataset.w$k6me_poam45), NA, (Epic.Dataset.w$k6me_poam45-Epic.Dataset.w$k5me_poam45)),
+                           pbe_delt = ifelse(is.na(Epic.Dataset.w$k6me_pedbe), NA, (Epic.Dataset.w$k6me_pedbe-Epic.Dataset.w$k5me_pedbe)),
+# calculate residual change scores for epigenetic age from age 9 to 15
+                           phen.EAAres.changescore.w = residuals(lm(phenoage.resid.W6.w ~ phenoage.resid.W5.w, data = .)),
+                           grim.EAAres.changescore.w = residuals(lm(grim.resid.W6.w ~ grim.resid.W5.w, data = .)),
+                           pace.EAAres.changescore.w = residuals(lm(PoAm45.Z.W6.w ~ PoAm45.Z.W5.w, data = .)), 
+                           paceZ.EAAres.changescore.w = scale(pace.EAAres.changescore.w) %>% as.vector, 
+                           pedbe.EAAres.changescore.w = residuals(lm(pedbe.resid.W6.w ~ pedbe.resid.W5.w, data = .)),
+# residualize out age, chip, & cell composition for bivariate correlations
+                           grim.cor.W5.w = residuals(lm(k5me_grim ~ k5me_age + k5me_epi + k5me_fib, data = .)),
+                           phe.cor.W5.w = residuals(lm(k5me_phenoage ~ k5me_age + k5me_epi + k5me_fib, data = .)),
+                           pace.cor.W5.w = residuals(lm(k5me_poam45 ~ k5me_age + k5me_epi + k5me_fib, data = .)),
+                           pbe.cor.W5.w = residuals(lm(k5me_pedbe ~ k5me_age + k5me_epi + k5me_fib, data = .)),
+                           grim.cor.W6.w = residuals(lm(k6me_grim ~ k6me_age + k6me_epi + k6me_fib, data = .)),
+                           phe.cor.W6.w = residuals(lm(k6me_phenoage ~ k6me_age + k6me_epi + k6me_fib, data = .)),
+                           pace.cor.W6.w = residuals(lm(k6me_poam45 ~ k6me_age + k6me_epi + k6me_fib, data = .)),
+                           pbe.cor.W6.w = residuals(lm(k6me_pedbe ~ k6me_age + k6me_epi + k6me_fib, data = .)),
+                           grim.cor.cs.w = residuals(lm(grim.resid.W6.w ~ grim.resid.W5.w + k5me_age + k6me_age + 
+                                                          k5me_epi + k5me_fib + k6me_epi + k6me_fib, data = .)),
+                           phe.cor.cs.w = residuals(lm(phenoage.resid.W6.w ~ phenoage.resid.W5.w + k5me_age + k6me_age + 
+                                                         k5me_epi + k5me_fib + k6me_epi + k6me_fib, data = .)),
+                           pace.cor.cs.w = residuals(lm(PoAm45.Z.W6.w ~ PoAm45.Z.W5.w + k5me_age + k6me_age + 
+                                                          k5me_epi + k5me_fib + k6me_epi + k6me_fib, data = .)),
+                           pbe.cor.cs.w = residuals(lm(pedbe.resid.W6.w ~ pedbe.resid.W5.w + k5me_age + k6me_age + 
+                                                         k5me_epi + k5me_fib + k6me_epi + k6me_fib, data = .)),
+                           grmcsw_r = residuals(lm(k6me_grim ~ k5me_grim, data = .)),
+                           phecsw_r = residuals(lm(k6me_phenoage ~ k5me_phenoage, data = .)),
+                           pcecsw_r = residuals(lm(k6me_poam45 ~ k5me_poam45, data = .)),
+                           pbecsw_r = residuals(lm(k6me_pedbe ~ k5me_pedbe, data = .)))
+#K450 chip
+K450.Dataset.w %<>% mutate(grim.raw.5w = k5mk_grim,
+                           phe.raw.5w = k5mk_phenoage, 
+                           pace.raw.5w = k5mk_poam45, 
+                           pbe.raw.5w = k5mk_pedbe, 
+                           grim.raw.6w = k6mk_grim,
+                           phe.raw.6w = k6mk_phenoage, 
+                           pace.raw.6w = k6mk_poam45, 
+                           pbe.raw.6w = k6mk_pedbe, 
+                           horvath.resid.W5.w = residuals(lm(k5mk_horvath ~ k5mk_age, data = .)), 
+                           skinblood.resid.W5.w = residuals(lm(k5mk_skinblood ~ k5mk_age, data = .)), 
+                           pedbe.resid.W5.w = residuals(lm(k5mk_pedbe ~ k5mk_age, data = .)), 
+                           phenoage.resid.W5.w = residuals(lm(k5mk_phenoage ~ k5mk_age, data = .)), 
+                           grim.resid.W5.w = residuals(lm(k5mk_grim ~ k5mk_age, data = .)),
+                           hannum.resid.W5.w = residuals(lm(k5mk_hannum ~ k5mk_age, data = .)),
+                           pchorvath1.resid.W5.w = residuals(lm(k5mk_pchorvath1 ~ k5mk_age, data = .)),
+                           pchorvath2.resid.W5.w = residuals(lm(k5mk_pchorvath2 ~ k5mk_age, data = .)),
+                           pchannum.resid.W5.w = residuals(lm(k5mk_pchannum ~ k5mk_age, data = .)),
+                           pcphenoage.resid.W5.w = residuals(lm(k5mk_pcphenoage ~ k5mk_age, data = .)),
+                           pcgrim.resid.W5.w = residuals(lm(k5mk_pcgrim ~ k5mk_age, data = .)),
+                           PoAm38.Z.W5.w = scale(k5mk_poam38) %>% as.vector,
+                           PoAm45.Z.W5.w = scale(k5mk_poam45) %>% as.vector, 
+                           horvath.resid.W6.w = residuals(lm(k6mk_horvath ~ k6mk_age, data = .)), 
+                           skinblood.resid.W6.w = residuals(lm(k6mk_skinblood ~ k6mk_age, data = .)), 
+                           pedbe.resid.W6.w = residuals(lm(k6mk_pedbe ~ k6mk_age, data = .)), 
+                           phenoage.resid.W6.w = residuals(lm(k6mk_phenoage ~ k6mk_age, data = .)), 
+                           grim.resid.W6.w = residuals(lm(k6mk_grim ~ k6mk_age, data = .)),
+                           hannum.resid.W6.w = residuals(lm(k6mk_hannum ~ k6mk_age, data = .)),
+                           pchorvath1.resid.W6.w = residuals(lm(k6mk_pchorvath1 ~ k6mk_age, data = .)),
+                           pchorvath2.resid.W6.w = residuals(lm(k6mk_pchorvath2 ~ k6mk_age, data = .)),
+                           pchannum.resid.W6.w = residuals(lm(k6mk_pchannum ~ k6mk_age, data = .)),
+                           pcphenoage.resid.W6.w = residuals(lm(k6mk_pcphenoage ~ k6mk_age, data = .)),
+                           pcgrim.resid.W6.w = residuals(lm(k6mk_pcgrim ~ k6mk_age, data = .)),
+                           PoAm38.Z.W6.w = scale(k6mk_poam38) %>% as.vector,
+                           PoAm45.Z.W6.w = scale(k6mk_poam45) %>% as.vector,
+                           chip = 0,
+                           AgeW5 = k5mk_age,
+                           AgeW6 = k6mk_age,
+# cell proportions (EpiDISH method)
+                           EpiW5w = 1*k5mk_epi,
+                           EpiW6w = 1*k6mk_epi,
+                           FibW5w = 1*k5mk_fib,
+                           FibW6w = 1*k6mk_fib,
+                           IcW5w = 1*k5mk_ic,
+                           IcW6w = 1*k6mk_ic,
+# calculate raw change scores for epigenetic age from age 9 to 15
+                           grm_delt = ifelse(is.na(K450.Dataset.w$k6mk_grim), NA, (K450.Dataset.w$k6mk_grim-K450.Dataset.w$k5mk_grim)), 
+                           phe_delt = ifelse(is.na(K450.Dataset.w$k6mk_phenoage), NA, (K450.Dataset.w$k6mk_phenoage-K450.Dataset.w$k5mk_phenoage)), 
+                           pce_delt = ifelse(is.na(K450.Dataset.w$k6mk_poam45), NA, (K450.Dataset.w$k6mk_poam45-K450.Dataset.w$k5mk_poam45)),
+                           pbe_delt = ifelse(is.na(K450.Dataset.w$k6mk_pedbe), NA, (K450.Dataset.w$k6mk_pedbe-K450.Dataset.w$k5mk_pedbe)),
+# calculate residual change scores for epigenetic age acceleration from age 9 to 15
+                           phen.EAAres.changescore.w = residuals(lm(phenoage.resid.W6.w ~ phenoage.resid.W5.w, data = .)),
+                           grim.EAAres.changescore.w = residuals(lm(grim.resid.W6.w ~ grim.resid.W5.w, data = .)),
+                           pace.EAAres.changescore.w = residuals(lm(PoAm45.Z.W6.w ~ PoAm45.Z.W5.w, data = .)), 
+                           paceZ.EAAres.changescore.w = scale(pace.EAAres.changescore.w) %>% as.vector, 
+                           pedbe.EAAres.changescore.w = residuals(lm(pedbe.resid.W6.w ~ pedbe.resid.W5.w, data = .)),
+# residualize out age, chip, & cell composition for bivariate correlations
+                           grim.cor.W5.w = residuals(lm(k5mk_grim ~ k5mk_age + k5mk_epi + k5mk_fib, data = .)),
+                           phe.cor.W5.w = residuals(lm(k5mk_phenoage ~ k5mk_age + k5mk_epi + k5mk_fib, data = .)),
+                           pace.cor.W5.w = residuals(lm(k5mk_poam45 ~ k5mk_age + k5mk_epi + k5mk_fib, data = .)),
+                           pbe.cor.W5.w = residuals(lm(k5mk_pedbe ~ k5mk_age + k5mk_epi + k5mk_fib, data = .)),
+                           grim.cor.W6.w = residuals(lm(k6mk_grim ~ k6mk_age + k6mk_epi + k6mk_fib, data = .)),
+                           phe.cor.W6.w = residuals(lm(k6mk_phenoage ~ k6mk_age + k6mk_epi + k6mk_fib, data = .)),
+                           pace.cor.W6.w = residuals(lm(k6mk_poam45 ~ k6mk_age + k6mk_epi + k6mk_fib, data = .)),
+                           pbe.cor.W6.w = residuals(lm(k6mk_pedbe ~ k6mk_age + k6mk_epi + k6mk_fib, data = .)),
+                           grim.cor.cs.w = residuals(lm(grim.resid.W6.w ~ grim.resid.W5.w + k5mk_age + k6mk_age + 
+                                                          k5mk_epi + k5mk_fib + k6mk_epi + k6mk_fib, data = .)),
+                           phe.cor.cs.w = residuals(lm(phenoage.resid.W6.w ~ phenoage.resid.W5.w + k5mk_age + k6mk_age + 
+                                                         k5mk_epi + k5mk_fib + k6mk_epi + k6mk_fib, data = .)),
+                           pace.cor.cs.w = residuals(lm(PoAm45.Z.W6.w ~ PoAm45.Z.W5.w + k5mk_age + k6mk_age + 
+                                                          k5mk_epi + k5mk_fib + k6mk_epi + k6mk_fib, data = .)),
+                           pbe.cor.cs.w = residuals(lm(pedbe.resid.W6.w ~ pedbe.resid.W5.w + k5mk_age + k6mk_age + 
+                                                         k5mk_epi + k5mk_fib + k6mk_epi + k6mk_fib, data = .)),
+                           grmcsw_r = residuals(lm(k6mk_grim ~ k5mk_grim, data = .)),
+                           phecsw_r = residuals(lm(k6mk_phenoage ~ k5mk_phenoage, data = .)),
+                           pcecsw_r = residuals(lm(k6mk_poam45 ~ k5mk_poam45, data = .)),
+                           pbecsw_r = residuals(lm(k6mk_pedbe ~ k5mk_pedbe, data = .)))
+
+# join black W5 epic and 450k together
+joined.w <- bind_rows(Epic.Dataset.w, K450.Dataset.w)
+# keep only age acceleration variables
+joined.w_reduced <- dplyr::select(joined.w,
+                                  "grim.raw.5w", "phe.raw.5w", "pace.raw.5w", "pbe.raw.5w", 
+                                  "grim.raw.6w", "phe.raw.6w", "pace.raw.6w", "pbe.raw.6w", 
+                                  "horvath.resid.W5.w", "skinblood.resid.W5.w", "pedbe.resid.W5.w", "phenoage.resid.W5.w", "grim.resid.W5.w", 
+                                  "hannum.resid.W5.w", "pchorvath1.resid.W5.w", "pchorvath2.resid.W5.w", "pchannum.resid.W5.w", 
+                                  "pcphenoage.resid.W5.w", "pcgrim.resid.W5.w", "PoAm38.Z.W5.w", "PoAm45.Z.W5.w", 
+                                  "horvath.resid.W6.w", "skinblood.resid.W6.w", "pedbe.resid.W6.w", "phenoage.resid.W6.w", "grim.resid.W6.w", 
+                                  "hannum.resid.W6.w", "pchorvath1.resid.W6.w", "pchorvath2.resid.W6.w", "pchannum.resid.W6.w", 
+                                  "pcphenoage.resid.W6.w", "pcgrim.resid.W6.w", "PoAm38.Z.W6.w", "PoAm45.Z.W6.w", "grm_delt",
+                                  "phe_delt", "pce_delt", "pbe_delt", "phen.EAAres.changescore.w", "grim.EAAres.changescore.w", 
+                                  "pace.EAAres.changescore.w", "paceZ.EAAres.changescore.w", "pedbe.EAAres.changescore.w", 
+                                  "grim.cor.W5.w", "phe.cor.W5.w", "pace.cor.W5.w", "pbe.cor.W5.w", "grim.cor.W6.w", "phe.cor.W6.w", 
+                                  "pace.cor.W6.w", "pbe.cor.W6.w", "grim.cor.cs.w", "phe.cor.cs.w", "pace.cor.cs.w", "pbe.cor.cs.w", 
+                                  "grmcsw_r", "phecsw_r", "pcecsw_r", "pbecsw_r",
+                                  "EpiW5w", "EpiW6w", "FibW5w", "FibW6w", "IcW5w", "IcW6w", "chip", "AgeW5", "AgeW6", "idnum")
+# join with full data set 
+merged_w <- merged_new2 %>%
+  inner_join(joined.w_reduced, by = "idnum")
+
+## LCA data prep black (black_lca)----
+black_lca_pre_new <- merged_b %>%
+  subset(select = c(
+    idnum,
+    rs5schidp,
+    rs6pseudoLEA, 
+    cp6_moved_9_15,
+    rs5nces_schooltype,
+    rs6nces_schooltype,
+    race,
+    cm1bsex,
+    eduY9,
+    eduY15,
+    momsmk,
+    momsmk_d,
+    m1city,
+    ch5bmiz,
+    ck6bmiz,
+    k6d2af,
+    k6d2y,
+    k6d2l,
+    k6d2g,
+    k6d2u,
+    k6d2h,
+    k6d2e,
+    k6d2ad,
+    k6d2m,
+    k6d2i,
+    k6d2k,
+    k6d2v,
+    k6d2ah,
+    k6d2ae,
+    k6d2o,
+    k6d2w,
+    k6d2b,
+    k6d2f,
+    k6d2s,
+    k6d2aa,
+    k6b1a,
+    k6b1b,
+    k6b1c,
+    k6b1d,
+    k6b32a,
+    k6b32b,
+    k6b32e,
+    k6b32f,
+    k6c40,
+    k6c41,
+    k6c17,
+    k6c18,
+    k6c19a,
+    k6c19b,
+    k6c19c,
+    k6c19d,
+    k6c28,
+    k6c29,
+    k6c30a,
+    k6c30b,
+    k6c30c,
+    k6c30d,
+    k6b32c,
+    k6b32d,
+    k6b4a,
+    k6b4b,
+    k6b4c,
+    k6b4d,
+    k6b4e,
+    k6b4f,
+    k6b4g,
+    k6b5a,
+    k6b5b,
+    k6b5c,
+    k6b2,
+    k6e13d,
+    k6e15,
+    k5h1, 
+    p5h1,
+    k6d3,
+    p6b1,
+    k5e2a, 
+    k5e2b, 
+    k5e2c, 
+    k5e2d,
+    incpovY9, 
+    incpovY15,
+    tm5pblck_cen00, 
+    tm5pwhte_cen00,
+    tm5ppuba_cen00,
+    tm5pfbpl_cen00,
+    tm5mhinc_cen00,
+    tp6ppuba_acs15,
+    tp6pfbpl_acs15, 
+    tp6mhinc_acs15,
+    pblkdis9, 
+    pblkdis15, 
+    pwhtdis9, 
+    pwhtdis15,
+    bmi_rcs, 
+    prh_rcs, 
+    crh_rcs,
+    # calculated variables
+    # segregation
+    pblkschY9,#................school % Black students in Y9
+    pwhtschY9,#................school % white students in Y9
+    pdblkY9,#..................district % black in Y9
+    pdwhtY9,#..................district % white in Y9
+    isosch9,#.................ratio of proportion black students in school to proportion black in district Y9 
+    segdis9, 
+    ses_seg9,
+    segtrct9, 
+    # discipline
+    exp9,#.............b-w mean difference in school expulsion Y9
+    sus9,#.............b-w mean difference in school suspension Y9
+    law9,#.............b-w ratio in school law enforcement referrals Y9
+    # resources
+    expnd_t, 
+    gtd9,#..................school offers gifted & talented program Y9
+    teach9,#.................ratio of students to FTE teachers Y9
+    cert9,#................ratio of licensed teachers to total teachers Y9
+    first9,#...............ratio of 1st year teachers to total teachers Y9
+    sal9,#.................teacher salaries per student Y9
+    sal9_inv, 
+    lunch9,#..................percent of student body that receives free/reduced price lunch Y9
+    fund9,#...................school eligible for Title I funding Y9
+    lqlunch, 
+    frl_d,
+    # achievement 
+    gift9,#............b-w difference in mean school g&t participation Y9
+    ach9,#.................white-black achievement gap in math and reading Y9
+    # harassment
+    bull9,#..................racial bullying incidents Y9
+    bull9cat,
+    # all DNAm variables
+    horvath.resid.W5.b,
+    skinblood.resid.W5.b,
+    pedbe.resid.W5.b,
+    phenoage.resid.W5.b,
+    grim.resid.W5.b,
+    hannum.resid.W5.b,
+    pchorvath1.resid.W5.b,
+    pchorvath2.resid.W5.b,
+    pchannum.resid.W5.b,
+    pcphenoage.resid.W5.b,
+    pcgrim.resid.W5.b,
+    PoAm38.Z.W5.b,
+    PoAm45.Z.W5.b,
+    horvath.resid.W6.b,
+    skinblood.resid.W6.b,
+    pedbe.resid.W6.b,
+    phenoage.resid.W6.b,
+    grim.resid.W6.b,
+    hannum.resid.W6.b,
+    pchorvath1.resid.W6.b,
+    pchorvath2.resid.W6.b,
+    pchannum.resid.W6.b,
+    pcphenoage.resid.W6.b,
+    pcgrim.resid.W6.b,
+    PoAm38.Z.W6.b,
+    PoAm45.Z.W6.b,
+    grm_delt,
+    phe_delt,
+    pce_delt,
+    pbe_delt,
+    phen.EAAres.changescore.b,
+    grim.EAAres.changescore.b,
+    pace.EAAres.changescore.b,
+    paceZ.EAAres.changescore.b,
+    pedbe.EAAres.changescore.b,
+    grmcsb_r,
+    phecsb_r, 
+    pcecsb_r,
+    pbecsb_r,
+    EpiW5,
+    EpiW6,
+    FibW5,
+    FibW6,
+    IcW5, 
+    IcW6,
+    chip,
+    AgeW5,
+    AgeW6, 
+    grim.raw.5b, 
+    phe.raw.5b, 
+    pace.raw.5b, 
+    pbe.raw.5b, 
+    grim.raw.6b,
+    phe.raw.6b, 
+    pace.raw.6b, 
+    pbe.raw.6b, 
+    grim.cor.W5.b, 
+    phe.cor.W5.b, 
+    pace.cor.W5.b,
+    pbe.cor.W5.b,
+    grim.cor.W6.b,
+    phe.cor.W6.b,
+    pace.cor.W6.b,
+    pbe.cor.W6.b, 
+    grim.cor.cs.b,
+    phe.cor.cs.b,
+    pace.cor.cs.b,
+    pbe.cor.cs.b)) %>%
+        dicho(segdis9,isosch9, law9, sus9, exp9, teach9, expnd_t, ses_seg9,
+                       first9, sal9_inv, lqlunch, ach9, bull9, 
+                       dich.by = "median", 
+                       as.num = TRUE, 
+                       append = TRUE, 
+                       suffix = "_d") %>%
+                 # remove observations missing on all LCA indicators 
+                  filter_at(vars(segdis9,isosch9, law9, sus9, exp9, teach9, expnd_t, ses_seg9,
+                                 first9, sal9_inv, lqlunch, ach9, bull9, 
+                                 gtd9), any_vars(!is.na(.))) %>%
+                 dplyr::rename(segd9_d =segdis9_d,
+                               grm5braw = grim.raw.5b,
+                               phe5braw = phe.raw.5b, 
+                               pce5braw = pace.raw.5b, 
+                               pbe5braw = pbe.raw.5b, 
+                               grm6braw = grim.raw.6b,
+                               phe6braw = phe.raw.6b, 
+                               pce6braw = pace.raw.6b, 
+                               pbe6braw = pbe.raw.6b, 
+                               hrv9b = horvath.resid.W5.b, 
+                               sb9b = skinblood.resid.W5.b,
+                               pbe9b = pedbe.resid.W5.b, 
+                               phe9b = phenoage.resid.W5.b, 
+                               han9b = hannum.resid.W5.b, 
+                               grim9b = grim.resid.W5.b,
+                               hrv9pcb = pchorvath1.resid.W5.b,
+                               sb9pcb = pchorvath2.resid.W5.b, #SkinBlood
+                               han9pcb = pchannum.resid.W5.b, 
+                               phe9pcb = pcphenoage.resid.W5.b, 
+                               grim9pcb = pcgrim.resid.W5.b, 
+                               pa389zb = PoAm38.Z.W5.b, 
+                               pa459zb = PoAm45.Z.W5.b, 
+                               hrv15b = horvath.resid.W6.b, 
+                               sb15b = skinblood.resid.W6.b,
+                               pbe15b = pedbe.resid.W6.b, 
+                               phe15b = phenoage.resid.W6.b, 
+                               han15b = hannum.resid.W6.b, 
+                               grim15b = grim.resid.W6.b,
+                               hr15pcb = pchorvath1.resid.W6.b,
+                               sb15pcb = pchorvath2.resid.W6.b, #SkinBlood
+                               han15pcb = pchannum.resid.W6.b, 
+                               phe15pcb = pcphenoage.resid.W6.b, 
+                               grm15pcb = pcgrim.resid.W6.b, 
+                               pa3815zb = PoAm38.Z.W6.b, 
+                               pa4515zb = PoAm45.Z.W6.b, 
+                               phe_csba = phen.EAAres.changescore.b, 
+                               grm_csba = grim.EAAres.changescore.b, 
+                               pce_csba = pace.EAAres.changescore.b,
+                               pcezcsba = paceZ.EAAres.changescore.b, 
+                               ped_csba = pedbe.EAAres.changescore.b,
+                               grm5bcor = grim.cor.W5.b, 
+                               phe5bcor = phe.cor.W5.b, 
+                               pce5bcor = pace.cor.W5.b, 
+                               pbe5bcor = pbe.cor.W5.b, 
+                               grm6bcor = grim.cor.W6.b, 
+                               phe6bcor = phe.cor.W6.b, 
+                               pce6bcor = pace.cor.W6.b, 
+                               pbe6bcor = pbe.cor.W6.b, 
+                               gmcsbcor = grim.cor.cs.b, 
+                               phcsbcor = phe.cor.cs.b, 
+                               pccsbcor = pace.cor.cs.b, 
+                               pbcsbcor = pbe.cor.cs.b,
+                               # covariates
+                               tm5pblck = tm5pblck_cen00,
+                               tm5pwhte = tm5pwhte_cen00,
+                               tpba00 = tm5ppuba_cen00, 
+                               tpbfpl00 = tm5pfbpl_cen00, 
+                               tmhinc00 = tm5mhinc_cen00, 
+                               tpba15 = tp6ppuba_acs15, 
+                               tpbfpl15 = tp6pfbpl_acs15,
+                               tmhinc15 = tp6mhinc_acs15)
+
+black_lca_new <-  mutate(black_lca_pre_new,
+                         female = ifelse(cm1bsex == 1, 0, ifelse(cm1bsex == 2, 1, 88)), 
+                         nogt9 = ifelse(is.na(gtd9), NA, ifelse(gtd9 == 1, 0, 1)),
+                         segd39 = ntile(segdis9, 3),
+                         segs39 = ntile(isosch9, 3), 
+                         law39 = ntile(law9, 3), 
+                         sus39 = ntile(sus9, 3), 
+                         exp39 = ntile(exp9, 3), 
+                         teach39 = ntile(teach9, 3), 
+                         first39 = ntile(first9, 3), 
+                         sal39 = ntile(sal9_inv, 3), 
+                         lunch39 = ntile(lunch9, 3), 
+                         ach39 = ntile(ach9, 3), 
+                         segd49 = ntile(segdis9, 4),
+                         segs49 = ntile(isosch9, 4), 
+                         # create conceptually meaningful categories of LQ. These reflect concentration 
+                         # dimension of segregation vs evenness dimension
+                         segrcat = ifelse(isosch9 <= 0.8, 0, # under-representation
+                                          ifelse(isosch9 <= 1.2, 1, # evenness
+                                                 ifelse(isosch9 <= 2.0, 2, # over-representation
+                                                        3))), #relevant over-representation
+                         segscat = ifelse(lqlunch <= 0.8, 0, # under-representation
+                                          ifelse(lqlunch <= 1.2, 1, # evenness
+                                                 ifelse(lqlunch <= 2.0, 2, # over-representation
+                                                        3))), #relevant over-representation
+                         law49 = ntile(law9, 4), 
+                         sus49 = ntile(sus9, 4), 
+                         exp49 = ntile(exp9, 4), 
+                         teach49 = ntile(teach9, 4), 
+                         first49 = ntile(first9, 4), 
+                         sal49 = ntile(sal9, 4), 
+                         lunch49 = ntile(lunch9, 4), 
+                         ach49 = ntile(ach9, 4), 
+                         dis9 = rowMeans(black_lca_pre_new[, c("law9", "sus9", "exp9")], na.rm=TRUE),
+                         dis39 = ntile(dis9, 3),
+                         dis49 = ntile(dis9, 4), 
+                         bull39 = ifelse(bull9 == 0, 1, ntile(bull9, 3)),
+                         bull49 = ifelse(bull9 == 0, 1, ntile(bull9, 4)),
+                         expt49 = ntile(expnd_t, 4), 
+                         expi49 = ntile(expnd_i, 4), 
+                         rev49 = ntile(revpup, 4),
+                         sesseg49 = ntile(ses_seg9, 4), 
+                         seslq49 = ntile(lqlunch, 4), 
+                         pblksch4 = ntile(pblkschY9, 4), 
+                         pwhtsch4 = ntile(pwhtschY9, 4))
+
+  
+
+# revserse code salary and expenditures
+black_lca_new <- black_lca_new %>% mutate(sal49_r = recode(sal49, `4` = 1, `3` = 2, `2` = 3, `1` = 4), 
+                                          expt49_r= recode(expt49, `4` = 1, `3` = 2, `2` = 3, `1` = 4))
+
+## LCA data prep white (white_lca)----
+white_lca_pre_new <- merged_w %>%
+  subset(select = c(
+    idnum,#....................id
+    rs5schidp, # Y9 school ID
+    cp6_moved_9_15, 
+    rs5nces_schooltype,#.......school type Y9
+    race,#.....................manually calculated race based on constructed variable and mother/father race
+    # core survey variables
+    cm1bsex,#..................child sex at W1
+    eduY9,#....................education Y9
+    eduY15,#...................education Y15
+    momsmk,#...................maternal smoking during pregnancy (categorical)
+    momsmk_d,#.................maternal smoking during pregnancy (dichotomous)
+    m1city,#...................mother city W1
+    ch5bmiz, #.................BMI Y9
+    ck6bmiz,#..................BMI Y15
+    k6d2af,
+    k6d2y,
+    k6d2l,
+    k6d2g,
+    k6d2u,
+    k6d2h,
+    k6d2e,
+    k6d2ad,
+    k6d2m,
+    k6d2i,
+    k6d2k,
+    k6d2v,
+    k6d2ah,
+    k6d2ae,
+    k6d2o,
+    k6d2w,
+    k6d2b,
+    k6d2f,
+    k6d2s,
+    k6d2aa,
+    k6b1a,
+    k6b1b,
+    k6b1c,
+    k6b1d,
+    k6b32a,
+    k6b32b,
+    k6b32e,
+    k6b32f,
+    k6c40,
+    k6c41,
+    k6c17,
+    k6c18,
+    k6c19a,
+    k6c19b,
+    k6c19c,
+    k6c19d,
+    k6c28,
+    k6c29,
+    k6c30a,
+    k6c30b,
+    k6c30c,
+    k6c30d,
+    k6b32c,
+    k6b32d,
+    k6b4a,
+    k6b4b,
+    k6b4c,
+    k6b4d,
+    k6b4e,
+    k6b4f,
+    k6b4g,
+    k6b5a,
+    k6b5b,
+    k6b5c,
+    k6b2,
+    k6e13d,
+    k6e15,
+    k5h1, # self rated helath and parent rated health
+    p5h1,
+    k6d3,
+    p6b1,
+    k5e2a, 
+    k5e2b, 
+    k5e2c, 
+    k5e2d,
+    bmi_rcs, 
+    crh_rcs, 
+    prh_rcs,
+    incpovY9, 
+    incpovY15,
+    tm5pblck_cen00, 
+    tm5pwhte_cen00,
+    tm5ppuba_cen00,
+    tm5pfbpl_cen00,
+    tm5mhinc_cen00,
+    #tpbmpl00,
+    tp6ppuba_acs15,
+    tp6pfbpl_acs15, 
+    tp6mhinc_acs15,
+    pblkdis9, 
+    pblkdis15, 
+    pwhtdis9, 
+    pwhtdis15,
+    # calculated variables
+    # segregation
+    pblkschY9,#................school % Black students in Y9
+    pwhtschY9,#................school % white students in Y9
+    pdblkY9,#..................district % black in Y9
+    pdwhtY9,#..................district % white in Y9
+    isosch9,#.................ratio of proportion black students in school to proportion black in district Y9 
+    segdis9, 
+    ses_seg9,
+    segtrct9,
+    rs5seda_hswhtblk_pooled, #..information index between schools Y9
+    # discipline
+    exp9,#.............b-w mean difference in school expulsion Y9
+    sus9,#.............b-w mean difference in school suspension Y9
+    law9,#.............b-w mean difference in school law enforcement referrals Y9
+    # resources
+    expnd_t, 
+    gtd9,#..................school offers gifted & talented program Y9
+    teach9,#.................ratio of students to FTE teachers Y9
+    first9,#...............ratio of 1st year teachers to total teachers Y9
+    sal9,#.................teacher salaries per student Y9
+    sal9_inv, 
+    lunch9,#..................percent of student body that receives free/reduced price lunch Y9
+    fund9,#...................school eligible for Title I funding Y9
+    lqlunch,
+    frl_d,
+    # achievement 
+    gift9,#............b-w difference in mean school g&t participation Y9
+    ach9,#.................white-black achievement gap in math and reading Y9
+    # harassment
+    bull9,#..................racial bullying incidents Y9
+    bull9cat,
+    # all DNAm variables
+    horvath.resid.W5.w,
+    skinblood.resid.W5.w,
+    pedbe.resid.W5.w,
+    phenoage.resid.W5.w,
+    grim.resid.W5.w,
+    hannum.resid.W5.w,
+    pchorvath1.resid.W5.w,
+    pchorvath2.resid.W5.w,
+    pchannum.resid.W5.w,
+    pcphenoage.resid.W5.w,
+    pcgrim.resid.W5.w,
+    PoAm38.Z.W5.w,
+    PoAm45.Z.W5.w,
+    horvath.resid.W6.w,
+    skinblood.resid.W6.w,
+    pedbe.resid.W6.w,
+    phenoage.resid.W6.w,
+    grim.resid.W6.w,
+    hannum.resid.W6.w,
+    pchorvath1.resid.W6.w,
+    pchorvath2.resid.W6.w,
+    pchannum.resid.W6.w,
+    pcphenoage.resid.W6.w,
+    pcgrim.resid.W6.w,
+    PoAm38.Z.W6.w,
+    PoAm45.Z.W6.w,
+    grm_delt,
+    phe_delt,
+    pce_delt,
+    pbe_delt,
+    phen.EAAres.changescore.w,
+    grim.EAAres.changescore.w,
+    pace.EAAres.changescore.w,
+    paceZ.EAAres.changescore.w,
+    pedbe.EAAres.changescore.w,
+    grmcsw_r,
+    phecsw_r, 
+    pcecsw_r,
+    pbecsw_r,
+    EpiW5w,
+    EpiW6w,
+    FibW5w,
+    FibW6w,
+    IcW5w, 
+    IcW6w,
+    chip,
+    AgeW5,
+    AgeW6,
+    grim.raw.5w, 
+    phe.raw.5w, 
+    pace.raw.5w, 
+    pbe.raw.5w, 
+    grim.raw.6w,
+    phe.raw.6w, 
+    pace.raw.6w, 
+    pbe.raw.6w, 
+    grim.cor.W5.w, 
+    phe.cor.W5.w, 
+    pace.cor.W5.w,
+    pbe.cor.W5.w,
+    grim.cor.W6.w,
+    phe.cor.W6.w,
+    pace.cor.W6.w,
+    pbe.cor.W6.w, 
+    grim.cor.cs.w,
+    phe.cor.cs.w,
+    pace.cor.cs.w,
+    pbe.cor.cs.w)) %>%
+  dicho(segdis9,isosch9, law9, sus9, exp9, teach9, expnd_t, ses_seg9,
+        first9, sal9_inv, lqlunch, ach9, bull9, 
+        dich.by = "median", 
+        as.num = TRUE, 
+        append = TRUE, 
+        suffix = "_d") %>%
+  # remove observations missing on all LCA indicators 
+  #filter_at(vars(segdis9,isosch9, law9, sus9, exp9, teach9, expnd_t, ses_seg9,
+  #               first9, sal9_inv, lqlunch, ach9, bull9, 
+  #               gtd9), any_vars(!is.na(.))) %>%
+                  dplyr::rename(segd9_d =segdis9_d,
+                                grm5wraw = grim.raw.5w,
+                                phe5wraw = phe.raw.5w, 
+                                pce5wraw = pace.raw.5w, 
+                                pbe5wraw = pbe.raw.5w, 
+                                grm6wraw = grim.raw.6w,
+                                phe6wraw = phe.raw.6w, 
+                                pce6wraw = pace.raw.6w, 
+                                pbe6wraw = pbe.raw.6w, 
+                                hrv9w = horvath.resid.W5.w, 
+                                sb9w = skinblood.resid.W5.w,
+                                pbe9w = pedbe.resid.W5.w, 
+                                phe9w = phenoage.resid.W5.w, 
+                                han9w = hannum.resid.W5.w, 
+                                grim9w = grim.resid.W5.w,
+                                hrv9pcw = pchorvath1.resid.W5.w,
+                                sb9pcw = pchorvath2.resid.W5.w, #SkinBlood
+                                han9pcw = pchannum.resid.W5.w, 
+                                phe9pcw = pcphenoage.resid.W5.w, 
+                                grim9pcw = pcgrim.resid.W5.w, 
+                                pa389zw = PoAm38.Z.W5.w, 
+                                pa459zw = PoAm45.Z.W5.w, 
+                                hrv15w = horvath.resid.W6.w, 
+                                sb15w = skinblood.resid.W6.w,
+                                pbe15w = pedbe.resid.W6.w, 
+                                phe15w = phenoage.resid.W6.w, 
+                                han15w = hannum.resid.W6.w, 
+                                grim15w = grim.resid.W6.w,
+                                hr15pcw = pchorvath1.resid.W6.w,
+                                sb15pcw = pchorvath2.resid.W6.w, #SkinBlood
+                                han15pcw = pchannum.resid.W6.w, 
+                                phe15pcw = pcphenoage.resid.W6.w, 
+                                grm15pcw = pcgrim.resid.W6.w, 
+                                pa3815zw = PoAm38.Z.W6.w, 
+                                pa4515zw = PoAm45.Z.W6.w, 
+                                phe_cswa = phen.EAAres.changescore.w, 
+                                grm_cswa = grim.EAAres.changescore.w, 
+                                pce_cswa = pace.EAAres.changescore.w,
+                                pcezcswa = paceZ.EAAres.changescore.w, 
+                                ped_cswa = pedbe.EAAres.changescore.w,
+                                grm5wcor = grim.cor.W5.w, 
+                                phe5wcor = phe.cor.W5.w, 
+                                pce5wcor = pace.cor.W5.w, 
+                                pbe5wcor = pbe.cor.W5.w, 
+                                grm6wcor = grim.cor.W6.w, 
+                                phe6wcor = phe.cor.W6.w, 
+                                pce6wcor = pace.cor.W6.w, 
+                                pbe6wcor = pbe.cor.W6.w, 
+                                gmcsbcor = grim.cor.cs.w, 
+                                phcsbcor = phe.cor.cs.w, 
+                                pccsbcor = pace.cor.cs.w, 
+                                pbcsbcor = pbe.cor.cs.w,
+                                # covariates
+                                tm5pblck = tm5pblck_cen00,
+                                tm5pwhte = tm5pwhte_cen00,
+                                tpba00 = tm5ppuba_cen00, 
+                                tpbfpl00 = tm5pfbpl_cen00, 
+                                tmhinc00 = tm5mhinc_cen00, 
+                                tpba15 = tp6ppuba_acs15, 
+                                tpbfpl15 = tp6pfbpl_acs15,
+                                tmhinc15 = tp6mhinc_acs15)
+white_lca_new <-  mutate(white_lca_pre_new,
+                                female = ifelse(cm1bsex == 1, 0, ifelse(cm1bsex == 2, 1, 88)), 
+                                nogt9 = ifelse(is.na(gtd9), NA, ifelse(gtd9 == 1, 0, 1)),
+                                segd39 = ntile(segdis9, 3),
+                                segs39 = ntile(isosch9, 3), 
+                                law39 = ntile(law9, 3), 
+                                sus39 = ntile(sus9, 3), 
+                                exp39 = ntile(exp9, 3), 
+                                teach39 = ntile(teach9, 3), 
+                                first39 = ntile(first9, 3), 
+                                sal39 = ntile(sal9_inv, 3), 
+                                lunch39 = ntile(lunch9, 3), 
+                                ach39 = ntile(ach9, 3), 
+                                segd49 = ntile(segdis9, 4),
+                                segs49 = ntile(isosch9, 4), 
+                                # create conceptually meaningful categories of LQ. These reflect concentration 
+                                # dimension of segregation vs evenness dimension
+                                segrcat = ifelse(isosch9 <= 0.8, 0, # under-representation
+                                                 ifelse(isosch9 <= 1.2, 1, # evenness
+                                                        ifelse(isosch9 <= 2.0, 2, # over-representation
+                                                               3))), #relevant over-representation
+                                segscat = ifelse(lqlunch <= 0.8, 0, # under-representation
+                                                 ifelse(lqlunch <= 1.2, 1, # evenness
+                                                        ifelse(lqlunch <= 2.0, 2, # over-representation
+                                                               3))), #relevant over-representation
+                                law49 = ntile(law9, 4), 
+                                sus49 = ntile(sus9, 4), 
+                                exp49 = ntile(exp9, 4), 
+                                teach49 = ntile(teach9, 4), 
+                                first49 = ntile(first9, 4), 
+                                sal49 = ntile(sal9, 4), 
+                                lunch49 = ntile(lunch9, 4), 
+                                ach49 = ntile(ach9, 4), 
+                                dis9 = rowMeans(white_lca_pre_new[, c("law9", "sus9", "exp9")], na.rm=TRUE),
+                                dis39 = ntile(dis9, 3),
+                                dis49 = ntile(dis9, 4), 
+                                bull49 = ntile(bull9, 4),
+                                expt49 = ntile(expnd_t, 4), 
+                                expi49 = ntile(expnd_i, 4), 
+                                rev49 = ntile(revpup, 4),
+                                sesseg49 = ntile(ses_seg9, 4), 
+                                seslq49 = ntile(lqlunch, 4), 
+                                pblksch4 = ntile(pblkschY9, 4), 
+                                pwhtsch4 = ntile(pwhtschY9, 4))
+# revserse code salary 
+white_lca_new <- white_lca_new %>% mutate(sal49_r = recode(sal49, `4` = 1, `3` = 2, `2` = 3, `1` = 4), 
+                                          expt49_r= recode(expt49, `4` = 1, `3` = 2, `2` = 3, `1` = 4))
+
+## examine missing on variables ----
+# DNAm at age 9 but not age 15
+
+black_out_raw <- readModels("/Users/cdm/Library/CloudStorage/Box-Box/FF/final/B/r1/step1/black_main_step1.out", what="savedata")$savedata %>%
+  dplyr::rename(idnum="IDNUM") 
+# black particiapnt-level dataset
+merged_new2$idnum <- as.numeric(merged_new2$idnum)
+black_participants <- right_join(merged_new2, black_out_raw, by = "idnum") 
+
+complete_time1 <- sum(!is.na(black_participants$grim.resid.W5))
+missing_time2 <- sum(is.na(black_participants$grim.resid.W6))
+complete_time1_missing_time2 <- sum(!is.na(black_participants$grim.resid.W5) & is.na(black_participants$grim.resid.W6))
+cat("Number of observations with complete data at time 1:", complete_time1, "\n")
+cat("Number of observations with missing data at time 2:", missing_time2, "\n")
+cat("Number of observations with complete data at time 1 and missing data at time 2:", complete_time1_missing_time2, "\n")
+
+# LCA indiactors and covariates
+# black particiapnt-level dataset
+merged_new2$idnum <- as.numeric(black_lca_new2$idnum)
+black_participants <- left_join(black_lca_new2, black_out_raw, by = "idnum") 
+#create separate dataframe of just LCA indicators, overall and by race
+vars_cont <- c("segdis9", "isosch9", "lqlunch", "ses_seg9", "law9", "sus9", "exp9", "teach9", 
+          "first9", "sal9", "expnd_t", "ach9", "bull9", "gtd9")
+vars <- c("idnum", "segd49", "segs49", "dis49", "fund9", "lunch49", "ach49", 
+          "nogt9", "teach49", "sal49", "first49", "bull9_d")
+covars <- c("AgeW5", "AgeW6", "eduY9", "female", "chip", "momsmk_d", 
+            "EpiW5", "EpiW6", "FibW5", "FibW6", "incpovY9", "tpbfpl00")
+lca_ind_b <- black_participants[, covars] # black
+lca_ind_w <- merged_w[merged_w$race==0, vars] # white
+
+# examine missingness of LCA indicators for black sample 
+vis_miss(lca_ind_b)
+summary(lca_ind_b$momsmk_d)
+gg_miss_upset(lca_ind_b, nsets = n_var_miss(lca_ind_b))
+
+# examine missingness of covariates 
+vis_miss(lca_covar_all)
+gg_miss_upset(lca_covar_all, nsets = n_var_miss(lca_covar_all))
+
+# year 15 
+vis_miss(lca_covar_all_15)
+gg_miss_upset(lca_covar_all_15, nsets = n_var_miss(lca_covar_all_15))
+
+# identify observations with missing values on all LCA indicators 
+missing_edu_data_b_new <- lca_ind_b %>%
+  mutate(missing_count = rowSums(is.na(select(., all_of(vars_cont))))
+  ) %>%
+  #filter(missing_count > 7 ) %>%
+  #filter(is.na(ach49)) %>%
+  select(idnum, missing_count) %>%
+  left_join(seda_reduced, by = "idnum") %>%
+  left_join(supp_reduced, by = "idnum")
+
+#check to see if school type accounts for missingness
+table(missing_edu_data_b_new$missing_count) 
+table(missing_edu_data_b_new$rs5nces_schooltype) # 60 black obs missing on all LCA indicators bc private/homeschooled/or valid missing data
+table(missing_edu_data_b_new$rs5crdc_rabhbr09) # 56 black obs missing on 7 indicators bc no CRDC survey
+table(missing_edu_data_w$rs5nces_schooltype) # 61 white obs missing on all LCA indicators bc private/homeschooled/or valid missing data
+table(missing_edu_data_w$rs5seda_mn_avg_ol_wbg_poolGCS) # 78 white obs missing on ach gap bc missing in raw seda dataset
+
+## determine clustering of students within schools----
+# black sample (n schools = 635)
+cluster <- as.data.frame(table(as.numeric(savedata_black_main_2$RS5SCHIDP, exclude = NULL)))
+mean(cluster$Freq, exclude = NULL)
+sd(cluster$Freq)
+median(cluster$Freq, exclude = NULL)
+IQR(cluster$Freq)
+table(cluster$Var1, exclude = NULL)
+# ICCs
+# grimage
+grim9b = summary(aov(GRIM9B ~ RS5SCHIDP,data=savedata_black_main_2))
+print(grim9b)
+grim9b[[1]][1,2]/sum(grim9b[[1]][,2])
+# phenoage
+phe9b = summary(aov(PHE9B ~ RS5SCHIDP,data=savedata_black_main_2))
+print(phe9b)
+phe9b[[1]][1,2]/sum(phe9b[[1]][,2])
+# PACE
+pa459zb = summary(aov(PA459ZB ~ RS5SCHIDP,data=savedata_black_main_2))
+print(pa459zb)
+pa459zb[[1]][1,2]/sum(pa459zb[[1]][,2])
+
+# white sample (n schools = 275)
+cluster <- as.data.frame(table(as.numeric(savedata_white_main_2$RS5SCHIDP, exclude = NULL)))
+mean(cluster$Freq, exclude = NULL)
+sd(cluster$Freq)
+median(cluster$Freq, exclude = NULL)
+IQR(cluster$Freq)
+table(cluster$Var1, exclude = NULL)
+# ICCs
+# grimage
+grim9w = summary(aov(GRIM9W ~ RS5SCHIDP,data=savedata_white_main_2))
+print(grim9w)
+grim9w[[1]][1,2]/sum(grim9w[[1]][,2])
+# phenoage
+phe9w = summary(aov(PHE9W ~ RS5SCHIDP,data=savedata_white_main_2))
+print(phe9w)
+phe9w[[1]][1,2]/sum(phe9w[[1]][,2])
+# PACE
+pa459zw = summary(aov(PA459ZW ~ RS5SCHIDP,data=savedata_white_main_2))
+print(pa459zw)
+pa459zw[[1]][1,2]/sum(pa459zw[[1]][,2])
