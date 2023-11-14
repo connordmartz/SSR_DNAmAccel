@@ -1,0 +1,881 @@
+#### DESCRIPTIVE STATISTICS----
+## import black sample----
+# black import most likely class assignments
+black_out_raw <- readModels("/Users/[blinded]/Library/CloudStorage/Box-Box/FF/final/B/r1/step1/black_main_step1.out", what="savedata")$savedata %>%
+  dplyr::rename(idnum="IDNUM") 
+# black particiapnt-level dataset
+black_participants <- left_join(black_out_raw, black_lca_new2, by = "idnum") 
+# black school-level dataset
+black_schools <- distinct(black_participants, rs5schidp, .keep_all = TRUE)
+### import white sample ----
+# white import most likely class assignments
+white_out_raw <- readModels("/Users/[blinded]/Library/CloudStorage/Box-Box/FF/final/W/r1/step1/white_main_step1.out", what="savedata")$savedata %>%
+  dplyr::rename(idnum="IDNUM")
+# white particiapnt-level dataset
+white_participants <- left_join(white_out_raw, white_lca_new2, by = "idnum")
+# white school-level dataset
+white_schools <- distinct(white_participants, rs5schidp, .keep_all = TRUE)
+# combined black and white participant-level dataset
+comb_participants <- bind_rows(black_participants, white_participants)
+# combined black and whtie school-level dataset
+comb_schools <- bind_rows(black_schools, white_schools)
+
+# overall descriptives (table s3) ----
+joined.comb$idnum <- as.numeric(joined.comb$idnum)
+comb_participants2 <- left_join(comb_participants, joined.comb, by = "idnum")
+st(comb_schools, vars= c('segdis9', 'isosch9', 'ses_seg9', 'lqlunch',
+                         'gtd9', 'teach9', 'sal9', 'first9', 'ach9','dis9','bull9'), digits = 4)
+st(comb_schools, vars= c('lunch9','pwhtschY9', 'pblkschY9',  'frl_d', 'pwhtdis9', 'pblkdis9'), digits = 4) # school descriptivies
+st(comb_participants, vars= c('tpbfpl00', 'tm5pwhte', 'tm5pblck'), digits = 4) #tract descriptives
+st(comb_participants, vars= c('grim9b', 'phe9b', 'pa459zb', 'AgeW5', 'momsmk_d', 'chipW5', 'FibW5', 'EpiW5', 'ICW5.y', 'incpovY9'), digits = 5)
+mean(comb_participants$female, na.rm=TRUE)
+sd(comb_participants$female, na.rm=TRUE)
+table(comb_participants$eduY9, exclude = NULL)
+
+
+variables <- c('grim.resid.W5', 'phenoage.resid.W5', 'PoAm45.Z.W5', 'grim.resid.W6', 'phenoage.resid.W6', 'PoAm45.Z.W6', 'AgeW5', 'female', 'eduY9', 'incpovY9', 'momsmk_d', 'FibW5', 'EpiW5', 'IcW5', 'chip')
+# Create a data frame to store the results
+results <- data.frame(Variable = variables, Summary = character(length(variables)), stringsAsFactors = FALSE)
+# Loop through the variables and calculate the mean (or count) and SD (or %)
+for (variable_name in variables) {
+  variable_data <- comb_participants2[[variable_name]]
+  summary_str <- ""
+  if (variable_name %in% c('grim.resid.W5', 'phenoage.resid.W5', 'PoAm45.Z.W5', 'grim.resid.W6', 'phenoage.resid.W6', 'PoAm45.Z.W6', 'AgeW5', 'incpovY9')) {
+    # For continuous variables
+    mean_val <- round(mean(variable_data, na.rm = TRUE), 2)
+    sd_val <- round(sd(variable_data, na.rm = TRUE), 2)
+    summary_str <- paste0(mean_val, " (", sd_val, ")")
+  } else if (variable_name %in% c('female', 'momsmk_d', 'FibW5', 'EpiW5', 'IcW5', 'chip')) {
+    # For dichotomous variables or percentages (multiply by 100 for percentage and add SD in parentheses)
+    mean_val <- round(mean(variable_data, na.rm = TRUE) * 100, 2)
+    sd_val <- round(sd(variable_data, na.rm = TRUE) *100, 2)
+    summary_str <- paste0(mean_val, " (", sd_val, ")")
+  } else if (variable_name == 'eduY9') {
+    # For the categorical variable 'eduY9'
+    table_result <- table(variable_data)
+    for (level in names(table_result)) {
+      count <- table_result[[level]]
+      percent <- round(prop.table(table_result)[[level]] * 100, 2)
+      summary_str <- paste0(summary_str, paste(level, count, " (", percent, "%)"), sep = ", ")
+    }
+  }
+  results <- rbind(results, data.frame(Variable = variable_name, Summary = summary_str))
+}
+# Print the results as a table
+view(results)
+
+
+
+# testing for sif differences in covariates by race
+# education anova
+chisq.test(comb_participants$eduY9, comb_participants$race, correct=TRUE)
+# maternal smoking
+chisq.test(comb_participants$momsmk_d, comb_participants$race, correct=TRUE)
+# tract poverty 
+t_pov <- aov(comb_participants$tpbfpl00 ~ comb_participants$race)
+summary(t_pov)
+# tract percent black
+t_black <- aov(comb_participants$tm5pblck ~ comb_participants$race)
+summary(t_black)
+chisq.test(comb_participants$tf5pblck, comb_participants$race, correct=TRUE)
+
+## table s3: overall descriptive for black sample (not school-specific) ----
+black_participants <- right_join(black_out_raw, black_lca_new2, by = "idnum") 
+st(black_schools, vars= c('segdis9', 'isosch9', 'ses_seg9', 'lqlunch', 'expnd_t', 
+                          'gtd9', 'teach9', 'sal9', 'first9', 'ach9','dis9','bull9'), digits = 4)
+st(black_schools, vars= c('lunch9','pwhtschY9', 'pblkschY9',  'frl_d', 'pwhtdis9', 'pblkdis9'), digits = 4) # school descriptivies
+st(black_participants, vars= c('tpbfpl00', 'tm5pwhte', 'tm5pblck'), digits = 4) #tract descriptives
+variables <- c('grim9b', 'phe9b', 'pa459zb', 'grim15b', 'phe15b', 'pa4515zb', 'AgeW5', 'female', 'eduY9', 'incpovY9', 'momsmk_d', 'FibW5b', 'EpiW5b', 'IcW5b', 'chip')
+# Create a data frame to store the results
+results <- data.frame(Variable = variables, Summary = character(length(variables)), stringsAsFactors = FALSE)
+# Loop through the variables and calculate the mean (or count) and SD (or %)
+for (variable_name in variables) {
+  variable_data <- black_participants[[variable_name]]
+  summary_str <- ""
+  if (variable_name %in% c('grim9b', 'phe9b', 'pa459zb', 'grim15b', 'phe15b', 'pa4515zb', 'AgeW5', 'incpovY9')) {
+    # For continuous variables
+    mean_val <- round(mean(variable_data, na.rm = TRUE), 2)
+    sd_val <- round(sd(variable_data, na.rm = TRUE), 2)
+    summary_str <- paste0(mean_val, " (", sd_val, ")")
+  } else if (variable_name %in% c('female', 'momsmk_d', 'FibW5b', 'EpiW5b', 'IcW5b', 'chip')) {
+    # For dichotomous variables or percentages (multiply by 100 for percentage and add SD in parentheses)
+    mean_val <- round(mean(variable_data, na.rm = TRUE) * 100, 2)
+    sd_val <- round(sd(variable_data, na.rm = TRUE) *100, 2)
+    summary_str <- paste0(mean_val, " (", sd_val, ")")
+  } else if (variable_name == 'eduY9') {
+    # For the categorical variable 'eduY9'
+    table_result <- table(variable_data)
+    for (level in names(table_result)) {
+      count <- table_result[[level]]
+      percent <- round(prop.table(table_result)[[level]] * 100, 2)
+      summary_str <- paste0(summary_str, paste(level, count, " (", percent, "%)"), sep = ", ")
+    }
+  }
+  results <- rbind(results, data.frame(Variable = variable_name, Summary = summary_str))
+}
+# Print the results as a table
+view(results)
+
+
+
+# table s3: overall descriptives for white sample (not school-specific) ----
+white_participants <- left_join(white_out_raw, white_lca_new2, by = "idnum")
+st(white_schools, vars= c('segdis9', 'isosch9', 'ses_seg9', 'lqlunch', 'expnd_t', 
+                          'gtd9', 'teach9', 'sal9', 'first9', 'ach9','dis9','bull9'), digits = 4)
+st(white_schools, vars= c('lunch9','pwhtschY9', 'pblkschY9',  'frl_d', 'pwhtdis9', 'pblkdis9'), digits = 4) # school descriptivies
+st(white_participants, vars= c('tpbfpl00', 'tm5pwhte', 'tm5pblck'), digits = 4) #tract descriptives
+# List of variable names
+variables <- c('grim9w', 'phe9w', 'pa459zw', 'grim15w', 'phe15w', 'pa4515zw', 'AgeW5', 'female', 'eduY9', 'incpovY9', 'momsmk_d', 'FibW5w', 'EpiW5w', 'IcW5w', 'chip')
+# Create a data frame to store the results
+results <- data.frame(Variable = variables, Summary = character(length(variables)), stringsAsFactors = FALSE)
+# Loop through the variables and calculate the mean (or count) and SD (or %)
+for (variable_name in variables) {
+  variable_data <- white_participants[[variable_name]]
+  summary_str <- ""
+  if (variable_name %in% c('grim9w', 'phe9w', 'pa459zw', 'grim15w', 'phe15w', 'pa4515zw', 'AgeW5', 'incpovY9')) {
+    # For continuous variables
+    mean_val <- round(mean(variable_data, na.rm = TRUE), 2)
+    sd_val <- round(sd(variable_data, na.rm = TRUE), 2)
+    summary_str <- paste0(mean_val, " (", sd_val, ")")
+  } else if (variable_name %in% c('female', 'momsmk_d', 'FibW5w', 'EpiW5w', 'IcW5w', 'chip')) {
+    # For dichotomous variables or percentages (multiply by 100 for percentage and add SD in parentheses)
+    mean_val <- round(mean(variable_data, na.rm = TRUE) * 100, 2)
+    sd_val <- round(sd(variable_data, na.rm = TRUE) *100, 2)
+    summary_str <- paste0(mean_val, " (", sd_val, ")")
+  } else if (variable_name == 'eduY9') {
+    # For the categorical variable 'eduY9'
+    table_result <- table(variable_data)
+    for (level in names(table_result)) {
+      count <- table_result[[level]]
+      percent <- round(prop.table(table_result)[[level]] * 100, 2)
+      summary_str <- paste0(summary_str, paste(level, count, " (", percent, "%)"), sep = ", ")
+    }
+  }
+  results <- rbind(results, data.frame(Variable = variable_name, Summary = summary_str))
+}
+# Print the results as a table
+view(results)
+
+## plot residual change score distribution by race in overall sample ----
+# combined race dataset
+joined.comb$idnum <- as.numeric(joined.comb$idnum)
+comb_black_participants <- left_join(black_out_raw, joined.comb, by = "idnum") 
+comb_black_participants <- comb_black_participants[!is.na(comb_black_participants$grim.EAAres.changescore.comb), ]
+comb_black_participants <- comb_black_participants[!is.na(comb_black_participants$phen.EAAres.changescore.comb), ]
+comb_black_participants <- comb_black_participants[!is.na(comb_black_participants$pace.EAAres.changescore.comb), ]
+comb_white_participants <- left_join(white_out_raw, joined.comb, by = "idnum")
+comb_white_participants <- comb_white_participants[!is.na(comb_white_participants$grim.EAAres.changescore.comb), ]
+comb_white_participants <- comb_white_participants[!is.na(comb_white_participants$phen.EAAres.changescore.comb), ]
+comb_white_participants <- comb_white_participants[!is.na(comb_white_participants$pace.EAAres.changescore.comb), ]
+# calculate the density - black
+dens_black_grm <- density(comb_black_participants$grim.EAAres.changescore.comb)
+dens_black_phe <- density(comb_black_participants$phen.EAAres.changescore.comb)
+dens_black_pce <- density(comb_black_participants$pace.EAAres.changescore.comb)
+# calculate the density - white
+dens_white_grm <- density(comb_white_participants$grim.EAAres.changescore.comb)
+dens_white_phe <- density(comb_white_participants$phen.EAAres.changescore.comb)
+dens_white_pce <- density(comb_white_participants$pace.EAAres.changescore.comb)
+
+dens_blackCol <- c("black")
+dens_blackCol_b1 <- addAlpha(dens_blackCol, alpha = .15)
+dens_blackCol_b2 <- addAlpha(dens_blackCol, alpha = 1)
+dens_whiteCol <- c("grey50")
+dens_whiteCol_b1 <- addAlpha(dens_whiteCol, alpha = .15)
+dens_whiteCol_b2 <- addAlpha(dens_whiteCol, alpha = 1)
+dens_whiteCol_b3 <- addAlpha(dens_whiteCol, alpha = .5)
+
+# plot grimage 
+summary(comb_black_participants$grim.EAAres.changescore.comb)
+summary_stats_black_title <- c(
+"Black")
+summary_stats_black <- c("
+Min = -11.80
+1st Qu. = -2.18
+Median = -0.17
+Mean = 0.50
+3rd Qu. = 2.66
+Max = 9.21")
+summary(comb_white_participants$grim.EAAres.changescore.comb)
+summary_stats_white_title <- c(
+  "White")
+summary_stats_white <- c("
+Min = -11.84
+1st Qu. = -3.68
+Median = -1.91 
+Mean = -1.43
+3rd Qu. = 0.21
+Max = 14.34")
+xlim <- range(-15, 25)
+ylim <- range(0, .15)
+png(filename = "/Users/[blinded]/Library/CloudStorage/Box-Box/FF/final/r1 plots/supp/grm_rcsb_hist_bw.png", 
+    width = 2000, height = 2000, units = "px", res = 300)
+plot(dens_black_grm, xlim = xlim, ylim = ylim, xlab = 'GrimAge Residual Change Scores',
+     main = 'Overall Sample: Δ GrimAge', 
+     panel.first = grid())
+polygon(dens_black_grm, density = -1, col = dens_blackCol_b1, border = dens_blackCol_b2)
+polygon(dens_white_grm, density = -1, col = dens_whiteCol_b1, border = dens_whiteCol_b2)
+legend('topleft',c('Black','White'),
+       fill = c(dens_blackCol_b2, dens_whiteCol_b3), bty = 'n',
+       border = NA)
+text_box_width_title_black <- max(strwidth(summary_stats_black_title))
+text_box_height_title_black <- max(strheight(summary_stats_black_title))
+text_box_width_black <- max(strwidth(summary_stats_black))
+text_box_height_black <- max(strheight(summary_stats_black))
+text_box_width_title_white <- max(strwidth(summary_stats_white_title))
+text_box_height_title_white <- max(strheight(summary_stats_white_title))
+text_box_width_white <- max(strwidth(summary_stats_white))
+text_box_height_white <- max(strheight(summary_stats_white))
+# black samp stats
+text(
+  x = 20,
+  y = 0.15, 
+  labels = summary_stats_black_title,
+  col = dens_blackCol_b2,
+  adj = 0, # Adjust for left-justification
+  cex = 0.9, # Set font size to 10-point (cex = 0.9 for 9-point font)
+  font = 2, # Use bold font
+)
+text(
+  x = 21.5 - text_box_width_black / 2, # Center the first line relative to the text box width
+  y = 0.13, 
+  labels = summary_stats_black,
+  col = dens_blackCol_b2,
+  adj = 0, # Adjust for left-justification
+  cex = 0.9, # Set font size to 10-point (cex = 0.9 for 9-point font)
+  font = 1 # Use bold font
+)
+rect(
+  xleft = 21.4 - text_box_width_black / 1.75,
+  ybottom = .108,
+  xright = 21.5 + text_box_width_black / 2.25,
+  ytop = .153,
+  border = "black",
+  col = NA
+)
+# white samp stats
+text(
+  x = 20,
+  y = 0.10, 
+  labels = summary_stats_white_title,
+  col = dens_blackCol_b2,
+  adj = 0, # Adjust for left-justification
+  cex = 0.9, # Set font size to 10-point (cex = 0.9 for 9-point font)
+  font = 2 # Use bold font
+)
+text(
+  x = 21.5 - text_box_width_white / 2, # Center the first line relative to the text box width
+  y = 0.08, 
+  labels = summary_stats_white,
+  col = dens_blackCol_b2,
+  adj = 0, # Adjust for left-justification
+  cex = 0.9, # Set font size to 10-point (cex = 0.9 for 9-point font)
+  font = 1 # Use bold font
+)
+rect(
+  xleft = 21.5 - text_box_width_white / 1.75,
+  ybottom = .058,
+  xright = 21.5 + text_box_width_white / 2.25,
+  ytop = .103,
+  border = "black",
+  col = NA
+)
+dev.off()  
+
+
+# plot phenoage 
+summary(comb_black_participants$phen.EAAres.changescore.comb)
+summary_stats_black_title <- c(
+  "Black")
+summary_stats_black <- c("
+Min = -14.73
+1st Qu. = -3.03
+Median = -0.14 
+Mean = 0.11
+3rd Qu. = 3.05
+Max = 18.68")
+summary(comb_white_participants$phen.EAAres.changescore.comb)
+summary_stats_white_title <- c(
+  "White")
+summary_stats_white <- c("
+Min = -20.09
+1st Qu. = -3.29
+Median = -0.48
+Mean = -0.48
+3rd Qu. = 2.64
+Max = 14.20")
+xlim <- range(-15, 20)
+ylim <- range(0, .15)
+png(filename = "/Users/[blinded]/Library/CloudStorage/Box-Box/FF/final/r1 plots/supp/phe_rcsb_hist_bw.png", 
+    width = 2000, height = 2000, units = "px", res = 300)
+plot(dens_black_phe, xlim = xlim, ylim = ylim, xlab = 'PhenoAge Residual Change Scores',
+     main = 'Overall Sample: Δ PhenoAge', 
+     panel.first = grid())
+polygon(dens_black_phe, density = -1, col = dens_blackCol_b1, border = dens_blackCol_b2)
+polygon(dens_white_phe, density = -1, col = dens_whiteCol_b1, border = dens_whiteCol_b2)
+legend('topleft',c('Black','White'),
+       fill = c(dens_blackCol_b2, dens_whiteCol_b3), bty = 'n',
+       border = NA)
+text_box_width_title_black <- max(strwidth(summary_stats_black_title))
+text_box_height_title_black <- max(strheight(summary_stats_black_title))
+text_box_width_black <- max(strwidth(summary_stats_black))
+text_box_height_black <- max(strheight(summary_stats_black))
+text_box_width_title_white <- max(strwidth(summary_stats_white_title))
+text_box_height_title_white <- max(strheight(summary_stats_white_title))
+text_box_width_white <- max(strwidth(summary_stats_white))
+text_box_height_white <- max(strheight(summary_stats_white))
+# black samp stats
+text(
+  x = 15,
+  y = 0.15, 
+  labels = summary_stats_black_title,
+  col = dens_blackCol_b2,
+  adj = 0, # Adjust for left-justification
+  cex = 0.9, # Set font size to 10-point (cex = 0.9 for 9-point font)
+  font = 2, # Use bold font
+)
+text(
+  x = 16.5 - text_box_width_black / 2, # Center the first line relative to the text box width
+  y = 0.13, 
+  labels = summary_stats_black,
+  col = dens_blackCol_b2,
+  adj = 0, # Adjust for left-justification
+  cex = 0.9, # Set font size to 10-point (cex = 0.9 for 9-point font)
+  font = 1 # Use bold font
+)
+rect(
+  xleft = 16.4 - text_box_width_black / 1.75,
+  ybottom = .108,
+  xright = 16.4 + text_box_width_black / 2.25,
+  ytop = .153,
+  border = "black",
+  col = NA
+)
+# white samp stats
+text(
+  x = 15,
+  y = 0.10, 
+  labels = summary_stats_white_title,
+  col = dens_blackCol_b2,
+  adj = 0, # Adjust for left-justification
+  cex = 0.9, # Set font size to 10-point (cex = 0.9 for 9-point font)
+  font = 2 # Use bold font
+)
+text(
+  x = 16.5 - text_box_width_white / 2, # Center the first line relative to the text box width
+  y = 0.08, 
+  labels = summary_stats_white,
+  col = dens_blackCol_b2,
+  adj = 0, # Adjust for left-justification
+  cex = 0.9, # Set font size to 10-point (cex = 0.9 for 9-point font)
+  font = 1 # Use bold font
+)
+rect(
+  xleft = 16.5 - text_box_width_white / 1.75,
+  ybottom = .058,
+  xright = 16.5 + text_box_width_white / 2.25,
+  ytop = .103,
+  border = "black",
+  col = NA
+)
+dev.off()  
+
+
+# plot dunedinPACE 
+summary(comb_black_participants$pce_delt_comb)
+summary_stats_black_title <- c(
+  "Black")
+summary_stats_black <- c("
+Min = -3.74
+1st Qu. = -0.72
+Median = 0.06
+Mean = 0.05
+3rd Qu. = 0.85
+Max = 3.83")
+summary(comb_white_participants$pce_delt_comb)
+summary_stats_white_title <- c(
+  "White")
+summary_stats_white <- c("
+Min = -3.40
+1st Qu. = -0.82
+Median = -0.12
+Mean = -0.16
+3rd Qu. = 0.62
+Max = 2.44")
+xlim <- range(-4, 4)
+ylim <- range(0, .5)
+png(filename = "/Users/[blinded]/Library/CloudStorage/Box-Box/FF/final/r1 plots/supp/pce_rcsb_hist_bw.png", 
+    width = 2000, height = 2000, units = "px", res = 300)
+plot(dens_black_pce, xlim = xlim, ylim = ylim, xlab = 'DunedinPACE Residual Change Scores',
+     main = 'Overall Sample: Δ DunedinPACE', 
+     panel.first = grid())
+polygon(dens_black_pce, density = -1, col = dens_blackCol_b1, border = dens_blackCol_b2)
+polygon(dens_white_pce, density = -1, col = dens_whiteCol_b1, border = dens_whiteCol_b2)
+legend('topleft',c('Black','White'),
+       fill = c(dens_blackCol_b2, dens_whiteCol_b3), bty = 'n',
+       border = NA)
+text_box_width_title_black <- max(strwidth(summary_stats_black_title))
+text_box_height_title_black <- max(strheight(summary_stats_black_title))
+text_box_width_black <- max(strwidth(summary_stats_black))
+text_box_height_black <- max(strheight(summary_stats_black))
+text_box_width_title_white <- max(strwidth(summary_stats_white_title))
+text_box_height_title_white <- max(strheight(summary_stats_white_title))
+text_box_width_white <- max(strwidth(summary_stats_white))
+text_box_height_white <- max(strheight(summary_stats_white))
+# black samp stats
+text(
+  x = 2.70,
+  y = 0.50, 
+  labels = summary_stats_black_title,
+  col = dens_blackCol_b2,
+  adj = 0, # Adjust for left-justification
+  cex = 0.9, # Set font size to 10-point (cex = 0.9 for 9-point font)
+  font = 2, # Use bold font
+)
+text(
+  x = 3.1 - text_box_width_black / 2, # Center the first line relative to the text box width
+  y = 0.433, 
+  labels = summary_stats_black,
+  col = dens_blackCol_b2,
+  adj = 0, # Adjust for left-justification
+  cex = 0.9, # Set font size to 10-point (cex = 0.9 for 9-point font)
+  font = 1 # Use bold font
+)
+rect(
+  xleft = 3.1 - text_box_width_black / 1.75,
+  ybottom = .36,
+  xright = 3.1 + text_box_width_black / 2.25,
+  ytop = .51,
+  border = "black",
+  col = NA
+)
+# white samp stats
+text(
+  x = 2.70,
+  y = 0.33, 
+  labels = summary_stats_white_title,
+  col = dens_blackCol_b2,
+  adj = 0, # Adjust for left-justification
+  cex = 0.9, # Set font size to 10-point (cex = 0.9 for 9-point font)
+  font = 2 # Use bold font
+)
+text(
+  x = 3.1 - text_box_width_white / 2, # Center the first line relative to the text box width
+  y = 0.263, 
+  labels = summary_stats_white,
+  col = dens_blackCol_b2,
+  adj = 0, # Adjust for left-justification
+  cex = 0.9, # Set font size to 10-point (cex = 0.9 for 9-point font)
+  font = 1 # Use bold font
+)
+rect(
+  xleft = 3.1 - text_box_width_white / 1.75,
+  ybottom = .19,
+  xright = 3.1 + text_box_width_white / 2.25,
+  ytop = .34,
+  border = "black",
+  col = NA
+)
+dev.off()  
+
+
+## table s3: school specific descriptives ----
+
+# Black: Segregated & High Disadvantage
+seg_race <- subset (black_schools, C=="2")
+seg_race_participants <- subset (black_participants, C=="2")
+st(seg_race, vars= c('segdis9', 'isosch9', 'ses_seg9', 'lqlunch', 
+                      'gtd9', 'teach9', 'sal9', 'first9', 'ach9','dis9','bull9'), digits = 4)
+st(seg_race, vars= c('lunch9', 'pwhtschY9', 'pblkschY9', 'frl_d', 'pwhtdis9', 'pblkdis9'), digits = 4) # school descriptivies
+st(seg_race_participants, vars= c('tpbfpl00', 'tm5pwhte', 'tm5pblck'), digits = 4) #tract descriptives
+
+variables <- c('grim9b', 'phe9b', 'pa459zb', 'grim15b', 'phe15b', 'pa4515zb', 'AgeW5', 'female', 'eduY9', 'incpovY9', 'momsmk_d', 'FibW5', 'EpiW5', 'IcW5', 'chip')
+# Create a data frame to store the results
+results <- data.frame(Variable = variables, Summary = character(length(variables)), stringsAsFactors = FALSE)
+# Loop through the variables and calculate the mean (or count) and SD (or %)
+for (variable_name in variables) {
+  variable_data <- seg_race_participants[[variable_name]]
+  summary_str <- ""
+  if (variable_name %in% c('grim9b', 'phe9b', 'pa459zb', 'grim15b', 'phe15b', 'pa4515zb', 'AgeW5', 'incpovY9')) {
+    # For continuous variables
+    mean_val <- round(mean(variable_data, na.rm = TRUE), 2)
+    sd_val <- round(sd(variable_data, na.rm = TRUE), 2)
+    summary_str <- paste0(mean_val, " (", sd_val, ")")
+  } else if (variable_name %in% c('female', 'momsmk_d', 'FibW5b', 'EpiW5b', 'IcW5b', 'chip')) {
+    # For dichotomous variables or percentages (multiply by 100 for percentage and add SD in parentheses)
+    mean_val <- round(mean(variable_data, na.rm = TRUE) * 100, 2)
+    sd_val <- round(sd(variable_data, na.rm = TRUE) *100, 2)
+    summary_str <- paste0(mean_val, " (", sd_val, ")")
+  } else if (variable_name == 'eduY9') {
+    # For the categorical variable 'eduY9'
+    table_result <- table(variable_data)
+    for (level in names(table_result)) {
+      count <- table_result[[level]]
+      percent <- round(prop.table(table_result)[[level]] * 100, 2)
+      summary_str <- paste0(summary_str, paste(level, count, " (", percent, "%)"), sep = ", ")
+    }
+  }
+  results <- rbind(results, data.frame(Variable = variable_name, Summary = summary_str))
+}
+# Print the results as a table
+view(results)
+
+
+# Black: Segregated & Moderate Disadvantage
+seg_ses <- subset (black_schools, C=="1")
+seg_ses_participants <- subset (black_participants, C=="1")
+st(seg_ses, vars= c('segdis9', 'isosch9', 'ses_seg9', 'lqlunch', 
+                    'gtd9', 'teach9', 'sal9', 'first9', 'ach9','dis9','bull9'), digits = 4)
+st(seg_ses, vars= c('lunch9', 'pwhtschY9', 'pblkschY9', 'frl_d', 'pwhtdis9', 'pblkdis9'), digits = 4) # school descriptivies
+st(seg_ses_participants, vars= c('tpbfpl00', 'tm5pwhte', 'tm5pblck'), digits = 4) #tract descriptives
+
+# List of variable names
+variables <- c('grim9b', 'phe9b', 'pa459zb', 'grim15b', 'phe15b', 'pa4515zb', 'AgeW5', 'female', 'eduY9', 'incpovY9', 'momsmk_d', 'FibW5b', 'EpiW5b', 'IcW5b', 'chip')
+# Create a data frame to store the results
+results <- data.frame(Variable = variables, Summary = character(length(variables)), stringsAsFactors = FALSE)
+# Loop through the variables and calculate the mean (or count) and SD (or %)
+for (variable_name in variables) {
+  variable_data <- seg_ses_participants[[variable_name]]
+  summary_str <- ""
+  if (variable_name %in% c('grim9b', 'phe9b', 'pa459zb', 'grim15b', 'phe15b', 'pa4515zb', 'AgeW5', 'incpovY9')) {
+    # For continuous variables
+    mean_val <- round(mean(variable_data, na.rm = TRUE), 2)
+    sd_val <- round(sd(variable_data, na.rm = TRUE), 2)
+    summary_str <- paste0(mean_val, " (", sd_val, ")")
+  } else if (variable_name %in% c('female', 'momsmk_d', 'FibW5b', 'EpiW5b', 'IcW5b', 'chip')) {
+    # For dichotomous variables or percentages (multiply by 100 for percentage and add SD in parentheses)
+    mean_val <- round(mean(variable_data, na.rm = TRUE) * 100, 2)
+    sd_val <- round(sd(variable_data, na.rm = TRUE) *100, 2)
+    summary_str <- paste0(mean_val, " (", sd_val, ")")
+  } else if (variable_name == 'eduY9') {
+    # For the categorical variable 'eduY9'
+    table_result <- table(variable_data)
+    for (level in names(table_result)) {
+      count <- table_result[[level]]
+      percent <- round(prop.table(table_result)[[level]] * 100, 2)
+      summary_str <- paste0(summary_str, paste(level, count, " (", percent, "%)"), sep = ", ")
+    }
+  }
+  results <- rbind(results, data.frame(Variable = variable_name, Summary = summary_str))
+}
+# Print the results as a table
+view(results)
+
+# Black: Integrated & Moderate Disadvantage
+int <- subset (black_schools, C=="3")
+int_participants <- subset (black_participants, C=="3")
+st(int, vars= c('segdis9', 'isosch9', 'ses_seg9', 'lqlunch', 
+                'gtd9', 'teach9', 'sal9', 'first9', 'ach9','dis9','bull9'), digits = 4)
+mean(int$gtd9, na.rm=TRUE)
+sd(int$gtd9, na.rm=TRUE)
+st(int, vars= c('lunch9', 'pwhtschY9', 'pblkschY9', 'frl_d', 'pwhtdis9', 'pblkdis9'), digits = 4) # school descriptivies
+st(int_participants, vars= c('tpbfpl00', 'tm5pwhte', 'tm5pblck'), digits = 4) #tract descriptives
+
+# List of variable names
+variables <- c('grim9b', 'phe9b', 'pa459zb', 'grim15b', 'phe15b', 'pa4515zb', 'AgeW5', 'female', 'eduY9', 'incpovY9', 'momsmk_d', 'FibW5b', 'EpiW5b', 'IcW5b', 'chip')
+# Create a data frame to store the results
+results <- data.frame(Variable = variables, Summary = character(length(variables)), stringsAsFactors = FALSE)
+# Loop through the variables and calculate the mean (or count) and SD (or %)
+for (variable_name in variables) {
+  variable_data <- int_participants[[variable_name]]
+  summary_str <- ""
+  if (variable_name %in% c('grim9b', 'phe9b', 'pa459zb', 'grim15b', 'phe15b', 'pa4515zb', 'AgeW5', 'incpovY9')) {
+    # For continuous variables
+    mean_val <- round(mean(variable_data, na.rm = TRUE), 2)
+    sd_val <- round(sd(variable_data, na.rm = TRUE), 2)
+    summary_str <- paste0(mean_val, " (", sd_val, ")")
+  } else if (variable_name %in% c('female', 'momsmk_d', 'FibW5b', 'EpiW5b', 'IcW5b', 'chip')) {
+    # For dichotomous variables or percentages (multiply by 100 for percentage and add SD in parentheses)
+    mean_val <- round(mean(variable_data, na.rm = TRUE) * 100, 2)
+    sd_val <- round(sd(variable_data, na.rm = TRUE) *100, 2)
+    summary_str <- paste0(mean_val, " (", sd_val, ")")
+  } else if (variable_name == 'eduY9') {
+    # For the categorical variable 'eduY9'
+    table_result <- table(variable_data)
+    for (level in names(table_result)) {
+      count <- table_result[[level]]
+      percent <- round(prop.table(table_result)[[level]] * 100, 2)
+      summary_str <- paste0(summary_str, paste(level, count, " (", percent, "%)"), sep = ", ")
+    }
+  }
+  results <- rbind(results, data.frame(Variable = variable_name, Summary = summary_str))
+}
+# Print the results as a table
+view(results)
+
+# White: Integrated & Unequal
+high_ineq <- subset (white_schools, C=="1")
+high_ineq_participants <- subset (white_participants, C=="1")
+st(high_ineq, vars= c('segdis9', 'isosch9', 'ses_seg9', 'lqlunch', 
+                      'gtd9', 'teach9', 'sal9', 'first9', 'ach9','dis9','bull9'), digits = 4)
+st(high_ineq, vars= c('lunch9', 'pwhtschY9', 'pblkschY9', 'frl_d', 'pwhtdis9', 'pblkdis9'), digits = 4) # school descriptivies
+st(high_ineq_participants, vars= c('tpbfpl00', 'tm5pwhte', 'tm5pblck'), digits = 4) #tract descriptives
+# List of variable names
+variables <- c('grim9w', 'phe9w', 'pa459zw', 'grim15w', 'phe15w', 'pa4515zw', 'AgeW5', 'female', 'eduY9', 'incpovY9', 'momsmk_d', 'FibW5w', 'EpiW5w', 'IcW5w', 'chip')
+# Create a data frame to store the results
+results <- data.frame(Variable = variables, Summary = character(length(variables)), stringsAsFactors = FALSE)
+# Loop through the variables and calculate the mean (or count) and SD (or %)
+for (variable_name in variables) {
+  variable_data <- high_ineq_participants[[variable_name]]
+  summary_str <- ""
+  if (variable_name %in% c('grim9w', 'phe9w', 'pa459zw', 'grim15w', 'phe15w', 'pa4515zw', 'AgeW5', 'incpovY9')) {
+    # For continuous variables
+    mean_val <- round(mean(variable_data, na.rm = TRUE), 2)
+    sd_val <- round(sd(variable_data, na.rm = TRUE), 2)
+    summary_str <- paste0(mean_val, " (", sd_val, ")")
+  } else if (variable_name %in% c('female', 'momsmk_d', 'FibW5w', 'EpiW5w', 'IcW5w', 'chip')) {
+    # For dichotomous variables or percentages (multiply by 100 for percentage and add SD in parentheses)
+    mean_val <- round(mean(variable_data, na.rm = TRUE) * 100, 2)
+    sd_val <- round(sd(variable_data, na.rm = TRUE) *100, 2)
+    summary_str <- paste0(mean_val, " (", sd_val, ")")
+  } else if (variable_name == 'eduY9') {
+    # For the categorical variable 'eduY9'
+    table_result <- table(variable_data)
+    for (level in names(table_result)) {
+      count <- table_result[[level]]
+      percent <- round(prop.table(table_result)[[level]] * 100, 2)
+      summary_str <- paste0(summary_str, paste(level, count, " (", percent, "%)"), sep = ", ")
+    }
+  }
+  results <- rbind(results, data.frame(Variable = variable_name, Summary = summary_str))
+}
+# Print the results as a table
+view(results)
+
+
+# White: Predominantly White & Advantaged
+low_ineq <- subset (white_schools, C=="2")
+low_ineq_participants <- subset (white_participants, C=="2")
+st(low_ineq, vars= c('segdis9', 'isosch9', 'ses_seg9', 'lqlunch', 
+                     'gtd9', 'teach9', 'sal9', 'first9', 'ach9','dis9','bull9'), digits = 4)
+st(low_ineq, vars= c('lunch9', 'pwhtschY9', 'pblkschY9', 'frl_d', 'pwhtdis9', 'pblkdis9'), digits = 4) # school descriptivies
+st(low_ineq_participants, vars= c('tpbfpl00', 'tm5pwhte', 'tm5pblck'), digits = 4) #tract descriptives
+
+# List of variable names
+variables <- c('grim9w', 'phe9w', 'pa459zw', 'grim15w', 'phe15w', 'pa4515zw', 'AgeW5', 'female', 'eduY9', 'incpovY9', 'momsmk_d', 'FibW5w', 'EpiW5w', 'IcW5w', 'chip')
+# Create a data frame to store the results
+results <- data.frame(Variable = variables, Summary = character(length(variables)), stringsAsFactors = FALSE)
+# Loop through the variables and calculate the mean (or count) and SD (or %)
+for (variable_name in variables) {
+  variable_data <- low_ineq_participants[[variable_name]]
+  summary_str <- ""
+    if (variable_name %in% c('grim9w', 'phe9w', 'pa459zw', 'grim15w', 'phe15w', 'pa4515zw', 'AgeW5', 'incpovY9')) {
+    # For continuous variables
+    mean_val <- round(mean(variable_data, na.rm = TRUE), 2)
+    sd_val <- round(sd(variable_data, na.rm = TRUE), 2)
+    summary_str <- paste0(mean_val, " (", sd_val, ")")
+  } else if (variable_name %in% c('female', 'momsmk_d', 'FibW5w', 'EpiW5w', 'IcW5w', 'chip')) {
+    # For dichotomous variables or percentages (multiply by 100 for percentage and add SD in parentheses)
+    mean_val <- round(mean(variable_data, na.rm = TRUE) * 100, 2)
+    sd_val <- round(sd(variable_data, na.rm = TRUE) *100, 2)
+    summary_str <- paste0(mean_val, " (", sd_val, ")")
+  } else if (variable_name == 'eduY9') {
+    # For the categorical variable 'eduY9'
+    table_result <- table(variable_data)
+    for (level in names(table_result)) {
+      count <- table_result[[level]]
+      percent <- round(prop.table(table_result)[[level]] * 100, 2)
+      summary_str <- paste0(summary_str, paste(level, count, " (", percent, "%)"), sep = ", ")
+    }
+  }
+  results <- rbind(results, data.frame(Variable = variable_name, Summary = summary_str))
+}
+# Print the results as a table
+view(results)
+
+
+
+
+
+## plot residual change score distribution across black school contexts ----
+# calculate the density 
+dens_seg_race_grm <- density(seg_race_participants$grm_csba)
+dens_seg_race_phe <- density(seg_race_participants$phe_csba)
+dens_seg_race_pce <- density(seg_race_participants$pce_csba)
+dens_seg_ses_grm <- density(seg_ses_participants$grm_csba)
+dens_seg_ses_phe <- density(seg_ses_participants$phe_csba)
+dens_seg_ses_pce <- density(seg_ses_participants$pce_csba)
+dens_int_grm <- density(int_participants$grm_csba)
+dens_int_phe <- density(int_participants$phe_csba)
+dens_int_pce <- density(int_participants$pce_csba)
+
+dens_seg_raceCol <- c("#228833")
+dens_seg_raceCol_b1 <- addAlpha(dens_seg_raceCol, alpha = .15)
+dens_seg_raceCol_b2 <- addAlpha(dens_seg_raceCol, alpha = 1)
+dens_seg_raceCol_b3 <- addAlpha(dens_seg_raceCol, alpha = .5)
+dens_seg_sesCol <- c("#AA3377")
+dens_seg_sesCol_b1 <- addAlpha(dens_seg_sesCol, alpha = .15)
+dens_seg_sesCol_b2 <- addAlpha(dens_seg_sesCol, alpha = 1)
+dens_seg_sesCol_b3 <- addAlpha(dens_seg_sesCol, alpha = .5)
+dens_intCol <- c("#4477AA")
+dens_intCol_b1 <- addAlpha(dens_intCol, alpha = .15)
+dens_intCol_b2 <- addAlpha(dens_intCol, alpha = 1)
+dens_intCol_b3 <- addAlpha(dens_intCol, alpha = .5)
+
+# grimage - black
+xlim <- range(-12, 12)
+ylim <- range(0, .15)
+png(filename = "/Users/[blinded]/Library/CloudStorage/Box-Box/FF/final/r1 plots/supp/grm_rcsb_hist_school_b.png", 
+    width = 2000, height = 2000, units = "px", res = 300)
+plot(dens_seg_race_grm, xlim = xlim, ylim = ylim, xlab = 'GrimAge Residual Change Scores',
+     main = '', 
+     panel.first = grid())
+polygon(dens_seg_race_grm, density = -1, col = dens_seg_raceCol_b1, border = dens_seg_raceCol_b2)
+polygon(dens_seg_ses_grm, density = -1, col = dens_seg_sesCol_b1, border = dens_seg_sesCol_b2)
+polygon(dens_int_grm, density = -1, col = dens_intCol_b1, border = dens_intCol_b2)
+dev.off()  
+summary(seg_race_participants$grm_csba)
+summary(seg_ses_participants$grm_csba)
+summary(int_participants$grm_csba)
+
+
+# phenoage - black
+xlim <- range(-12, 12)
+ylim <- range(0, .15)
+png(filename = "/Users/[blinded]/Library/CloudStorage/Box-Box/FF/final/r1 plots/supp/phe_csba_hist_school_b.png", 
+    width = 2000, height = 2000, units = "px", res = 300)
+plot(dens_seg_race_phe, xlim = xlim, ylim = ylim, xlab = 'PhenoAge Residual Change Scores',
+     main = '', 
+     panel.first = grid())
+polygon(dens_seg_race_phe, density = -1, col = dens_seg_raceCol_b1, border = dens_seg_raceCol_b2)
+polygon(dens_seg_ses_phe, density = -1, col = dens_seg_sesCol_b1, border = dens_seg_sesCol_b2)
+polygon(dens_int_phe, density = -1, col = dens_intCol_b1, border = dens_intCol_b2)
+dev.off()  
+summary(seg_race_participants$phe_csba)
+summary(seg_ses_participants$phe_csba)
+summary(int_participants$phe_csba)
+
+# dunedinPACE - black 
+xlim <- range(-3, 3)
+ylim <- range(0, .5)
+png(filename = "/Users/[blinded]/Library/CloudStorage/Box-Box/FF/final/r1 plots/supp/pce_csba_hist_school_b.png", 
+    width = 2000, height = 2000, units = "px", res = 300)
+plot(dens_seg_race_pce, xlim = xlim, ylim = ylim, xlab = 'DunedinPACE Residual Change Scores',
+     main = '', 
+     panel.first = grid())
+polygon(dens_seg_race_pce, density = -1, col = dens_seg_raceCol_b1, border = dens_seg_raceCol_b2)
+polygon(dens_seg_ses_pce, density = -1, col = dens_seg_sesCol_b1, border = dens_seg_sesCol_b2)
+polygon(dens_int_pce, density = -1, col = dens_intCol_b1, border = dens_intCol_b2)
+dev.off()  
+summary(seg_race_participants$pce_csba)
+summary(seg_ses_participants$pce_csba)
+summary(int_participants$pce_csba)
+
+## plot residual change score distribution across white school contexts ----
+# calculate the density 
+dens_pwa_grm <- density(low_ineq_participants$grm_cswa)
+dens_pwa_phe <- density(low_ineq_participants$phe_cswa)
+dens_pwa_pce <- density(low_ineq_participants$pce_cswa)
+dens_int_unq_grm <- density(high_ineq_participants$grm_cswa)
+dens_int_unq_phe <- density(high_ineq_participants$phe_cswa)
+dens_int_unq_pce <- density(high_ineq_participants$pce_cswa)
+
+dens_pwaCol <- c("#CCBB44")
+dens_pwaCol_b1 <- addAlpha(dens_pwaCol, alpha = .15)
+dens_pwaCol_b2 <- addAlpha(dens_pwaCol, alpha = 1)
+dens_pwaCol_b3 <- addAlpha(dens_pwaCol, alpha = .5)
+dens_int_unqCol <- c("#66CCEE")
+dens_int_unqCol_b1 <- addAlpha(dens_int_unqCol, alpha = .15)
+dens_int_unqCol_b2 <- addAlpha(dens_int_unqCol, alpha = 1)
+dens_int_unqCol_b3 <- addAlpha(dens_int_unqCol, alpha = .5)
+
+# grimage - white
+xlim <- range(-12, 12)
+ylim <- range(0, .20)
+png(filename = "/Users/[blinded]/Library/CloudStorage/Box-Box/FF/final/r1 plots/supp/grm_cswa_hist_school_w.png", 
+    width = 2000, height = 2000, units = "px", res = 300)
+plot(dens_pwa_grm, xlim = xlim, ylim = ylim, xlab = 'GrimAge Residual Change Scores',
+     main = '', 
+     panel.first = grid())
+polygon(dens_pwa_grm, density = -1, col = dens_pwaCol_b1, border = dens_pwaCol_b2)
+polygon(dens_int_unq_grm, density = -1, col = dens_int_unqCol_b1, border = dens_int_unqCol_b2)
+dev.off()
+summary(high_ineq_participants$grm_cswa)
+summary(low_ineq_participants$grm_cswa)
+
+# phenoage - black
+xlim <- range(-12, 12)
+ylim <- range(0, .15)
+png(filename = "/Users/[blinded]/Library/CloudStorage/Box-Box/FF/final/r1 plots/supp/phe_cswa_hist_school_w.png", 
+    width = 2000, height = 2000, units = "px", res = 300)
+plot(dens_pwa_phe, xlim = xlim, ylim = ylim, xlab = 'PhenoAge Residual Change Scores',
+     main = '', 
+     panel.first = grid())
+polygon(dens_pwa_phe, density = -1, col = dens_pwaCol_b1, border = dens_pwaCol_b2)
+polygon(dens_int_unq_phe, density = -1, col = dens_int_unqCol_b1, border = dens_int_unqCol_b2)
+dev.off()
+summary(high_ineq_participants$phe_cswa)
+summary(low_ineq_participants$phe_cswa)
+
+# dunedinPACE - black 
+xlim <- range(-3, 3)
+ylim <- range(0, .5)
+png(filename = "/Users/[blinded]/Library/CloudStorage/Box-Box/FF/final/r1 plots/supp/pce_cswa_hist_school_w.png", 
+    width = 2000, height = 2000, units = "px", res = 300)
+plot(dens_pwa_pce, xlim = xlim, ylim = ylim, xlab = 'DunedinPACE Residual Change Scores',
+     main = '', 
+     panel.first = grid())
+polygon(dens_pwa_pce, density = -1, col = dens_pwaCol_b1, border = dens_pwaCol_b2)
+polygon(dens_int_unq_pce, density = -1, col = dens_int_unqCol_b1, border = dens_int_unqCol_b2)
+dev.off()
+summary(high_ineq_participants$pce_cswa)
+summary(low_ineq_participants$pce_cswa)
+
+### black: correlations between PedBE, GrimAge, PhenoAge, and DunedinPACE----
+## age acceleration clocks
+custom_labels_b <- c("GrimAge (Y9)", "PhenoAge (Y9)", "DunedinPACE (Y9)",
+                     "GrimAge (Y15)", "PhenoAge (Y15)", "DunedinPACE (Y15)",
+                     "Δ GrimAge", "Δ PhenoAge", "Δ DunedinPACE") 
+cor_black_clocks <- black_lca_new[, c("grm5bcor", "phe5bcor", "pce5bcor", 
+                                      "grm6bcor", "phe6bcor", "pce6bcor",
+                                      "gmcsbcor", "phcsbcor", "pccsbcor")]
+cor_matrix_black <- cor(cor_black_clocks)
+rownames(cor_matrix_black) <- custom_labels_b
+colnames(cor_matrix_black) <- custom_labels_b
+png(filename = "/Users/[blinded]/Library/CloudStorage/Box-Box/FF/final/r1 plots/corplot_clocks_b.png", 
+    width = 2000, height = 2000, units = "px", res = 300)
+corplot_clocks_b <- corrplot(cor_matrix_black, method = 'color', type = 'lower',
+                             tl.col = 'black', addCoef.col = 'black', col = COL2('RdBu', 10),
+                             number.cex = 0.6, cl.ratio = 0.2, tl.srt = 45, diag = TRUE, 
+                             tl.cex = 0.7)
+print(corplot_clocks_b)  # Print the corrplot to the PNG file
+dev.off()  
+
+### white: correlations between PedBE, GrimAge, PhenoAge, and DunedinPACE----
+custom_labels_w <- c("GrimAge (Y9)", "PhenoAge (Y9)", "DunedinPACE (Y9)",
+                     "GrimAge (Y15)", "PhenoAge (Y15)", "DunedinPACE (Y15)",
+                     "Δ GrimAge", "Δ PhenoAge", "Δ DunedinPACE") 
+cor_white_clocks <- white_lca_new[, c("grm5wcor", "phe5wcor", "pce5wcor",
+                                      "grm6wcor", "phe6wcor", "pce6wcor",
+                                      "gmcsbcor", "phcsbcor", "pccsbcor")]
+cor_matrix_white <- cor(cor_white_clocks)
+rownames(cor_matrix_white) <- custom_labels_w
+colnames(cor_matrix_white) <- custom_labels_w
+png(filename = "/Users/[blinded]/Library/CloudStorage/Box-Box/FF/final/r1 plots/corplot_clocks_w.png", 
+    width = 2000, height = 2000, units = "px", res = 300)
+corplot_clocks_w <- corrplot(cor_matrix_white, method = 'color', type = 'lower',
+                             tl.col = 'black', addCoef.col = 'black', col = COL2('RdBu', 10),
+                             number.cex = 0.6, cl.ratio = 0.2, tl.srt = 45, diag = TRUE, 
+                             tl.cex = 0.7)
+print(corplot_clocks_w) 
+dev.off()  
+
+
+## raw epigenetic aging values (age not residualized out)
+custom_labels_w_raw <- c("Chronological Age (Y9)","Chronological Age (Y15)", "GrimAge (Y9)", "PhenoAge (Y9)", 
+                         "DunedinPACE (Y9)", "PedBE (Y9)", "GrimAge (Y15)", "PhenoAge (Y15)", "DunedinPACE (Y15)", 
+                         "PedBE (Y15)", "Δ GrimAge", "Δ PhenoAge", "Δ DunedinPACE", "Δ PedBE") 
+cor_white_clocks_raw <- white_lca_new[, c("AgeW5", "AgeW6", "grm5wraw", "phe5wraw", "pce5wraw", "pbe5wraw", 
+                                          "grm6wraw", "phe6wraw", "pce6wraw","pbe6wraw", "grmcsw_r", 
+                                          "phecsw_r", "pcecsw_r", "pbecsw_r")]
+
+cor_matrix_white_raw <- cor(cor_white_clocks_raw)
+rownames(cor_matrix_white_raw) <- custom_labels_w_raw
+colnames(cor_matrix_white_raw) <- custom_labels_w_raw
+png(filename = "/Users/[blinded]/Library/CloudStorage/Box-Box/FF/final/r1 plots/corplot_raw clocks_w.png", 
+    width = 2000, height = 2000, units = "px", res = 300)
+corplot_clocks_b <- corrplot(cor_matrix_white_raw, method = 'color', type = 'lower',
+                             tl.col = 'black', addCoef.col = 'black', col = COL2('RdBu', 10),
+                             number.cex = 0.6, cl.ratio = 0.2, tl.srt = 45, diag = TRUE, 
+                             tl.cex = 0.7)
+print(corplot_clocks_b)  # Print the corrplot to the PNG file
+dev.off()  
