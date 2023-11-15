@@ -1,0 +1,73 @@
+## black: plot best-fitting 3 class solution ----
+vals_b3 <- (r1_out_b[["black_c3.out"]][["gh5"]][["means_and_variances_data"]][["estimated_probs"]])
+vals_b3 <- melt(vals_b3, varnames = c('LC', 'class'), value.name="prob", na.rm = TRUE)
+vals_b3$LC <- factor(vals_b3$LC)
+# manually assign variable names and category labels to mplus output
+vals_b3_2 <- mutate(vals_b3, 
+                    category = ifelse(LC %in% c(1,5,9,13,17,19,23,27,31,35,39), 2, #reordered classes
+                               ifelse(LC %in% c(2,6,10,14,18,20,24,28,32,36,40), 1,
+                               ifelse(LC %in% c(3,7,11,15,21,25,29,33,37,41), 3, 4))),
+                    variable = ifelse(LC == 1 | LC == 2 | LC == 3 | LC == 4, "segd49", 
+                               ifelse(LC == 5 | LC == 6 | LC == 7 | LC == 8, "segs49", 
+                               ifelse(LC == 9 | LC == 10 | LC == 11 | LC == 12, "sesseg49", 
+                               ifelse(LC == 13 | LC == 14 | LC == 15 | LC == 16, "seslq49",
+                               ifelse(LC == 17 | LC == 18, "nogt9", 
+                               ifelse(LC == 19 | LC == 20 | LC == 21 | LC == 22, "teach49", 
+                               ifelse(LC == 23 | LC == 24 | LC == 25 | LC == 26, "sal49_r", 
+                               ifelse(LC == 27 | LC == 28 | LC == 29 | LC == 30, "first49",
+                               ifelse(LC == 31 | LC == 32 | LC == 33 | LC == 34, "ach49",
+                               ifelse(LC == 35 | LC == 36 | LC == 37 | LC == 38, "dis49",
+                               ifelse(LC == 39 | LC == 40 | LC == 41, "bull9cat", 0))))))))))))
+temp <- subset(vals_b3_2, select = c(prob, category, variable)) 
+valsb_c1 <- slice(temp, 1:41) %>% mutate(class1=100*prob) %>% subset(select=-c(prob)) 
+temp2 <- subset(vals_b3_2, select = c(prob)) 
+valsb_c2 <- slice(temp2, 42:82) %>% mutate(class2=100*prob) %>% subset(select=-c(prob)) #reordered classes
+valsb_c3 <- slice(temp2, 83:123) %>% mutate(class3=100*prob) %>% subset(select=-c(prob)) #reordered classes
+valsb_comb <- bind_cols(valsb_c1, valsb_c2, valsb_c3) 
+valsb_comb$category <- as.character(valsb_comb$category)
+ld_b <- valsb_comb[,c(2, 1, 3, 4, 5)] # order should be variable, category, class1, class2, class3
+
+### Creating an empty matrix with unique variables (since values are on separate lines)
+#   (pd - "plotting data")
+pd <- matrix(data=NA, nrow=length(unique(ld_b$variable)), ncol=length(names(ld_b))-2, dimnames = list(as.character(unique(ld_b$variable)), names(ld_b)[3:length(names(ld_b))]))
+
+# data formatting/prep
+### Normalizing the Varible values to range from 0-1 (on top of consistent coding from above)
+for (i in 1:nrow(pd)){
+  temp <- as.matrix(ld_b[which(ld_b$variable==unique(ld_b$variable)[i]),3:ncol(ld_b)])
+  nlev <- length(which(ld_b$variable==unique(ld_b$variable)[i]))
+  base <- nlev-1
+  pd[which(rownames(pd)==unique(ld_b$variable)[i]),] <- apply(c(0:base)/base * temp/100, 2, sum)
+}
+# reverse code salaries so higher values are indicative of lower salaries
+#abs_diff <- abs(pd["sal49", c("class1", "class2", "class3")] - 1)
+#pd["sal49", c("class1", "class2", "class3")] <- abs_diff
+data <- rbind(rep(1,nrow(pd)) , rep(0,nrow(pd)) , t(pd))
+
+
+# plot
+plot_colors <- c("#AA3377", "#228833", "#4477AA","#CCBB44","#66CCEE")
+col_b1 <- addAlpha(plot_colors, alpha = .15)
+col_b2 <- addAlpha(plot_colors, alpha = 1)
+
+# open PNG device and set larger width and height
+png("/Users/[blinded]/Library/CloudStorage/Box-Box/FF/final/r1 plots/black_3class_110923.png", width = 3100, height = 2800, res = 300)
+# create the plot
+radarchart(as.data.frame(data[1:5,]), axistype = 1,
+           pcol = col_b2[1:3], pfcol = col_b1[1:3], plwd = 2, plty = 1, pty=32,
+           cglcol = "grey", cglty = 1, axislabcol = "grey", caxislabels = seq(0,1,5), cglwd = 0.8,
+           vlcex = 1.2,
+           vlabels = c("Racial Segregation\n(District)", 
+                       "School\nDisproportionately\nBlack", 
+                       "Poverty Segregation   \n(District)  ", 
+                       "School         \nDisproportionately         \nPoor        ", 
+                       "No Gifted/\nTalented Program",
+                       "Students\nPer Teacher", 
+                       "Lower\nTeacher\nSalaries", 
+                       "  % First-Year\n  Teachers",
+                       "    Black\n   Achievement\n   Disadvantage",
+                       "      Black\n     Discipline\n     Disadvantage",
+                       "   Racial\n   Harassment\n   Incidents"), 
+           title = ""
+)
+dev.off()
