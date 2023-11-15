@@ -1,0 +1,80 @@
+#### PLOT MAIN ESTIMATES----
+###
+## import Black
+BY15A9_main <- readModels(here("final/B/r1/main"), quiet = TRUE, what = "parameters")
+BY15A9_main_est <- lapply(BY15A9_main, function(x){x$parameters$ci.stdyx.standardized}) 
+BY15A9_main_est <- do.call(rbind.data.frame, BY15A9_main_est) 
+BY15A9_main_int <- as.data.frame(filter(BY15A9_main_est, paramHeader == "Intercepts" & LatentClass %in% 1:3) %>%
+                                   subset(select = c("param", "est", "low2.5", "up2.5", "LatentClass")) %>%
+                                   mutate(class = ifelse(LatentClass == 3, "Black: Integrated & Moderate Disadvantage (30.8%)", 
+                                                         ifelse(LatentClass == 2, "Black: Segregated & High Disadvantage (17.0%)", "Black: Segregated & Moderate Disadvantage (52.1%)")), 
+                                          class_f = factor(class, levels = c("Black: Segregated & High Disadvantage (17.0%)", 
+                                                                             "Black: Segregated & Moderate Disadvantage (52.1%)","Black: Integrated & Moderate Disadvantage (30.8%)")))) 
+# Initialize the "dnam" variable with 0 for all rows
+BY15A9_main_int$dnam <- 0  
+# Assign values to "dnam" based on the conditions
+BY15A9_main_int$dnam[BY15A9_main_int$param %in% c("GRM_CSBA")] <- "Black\nGrimAge"
+BY15A9_main_int$dnam[BY15A9_main_int$param %in% c("PHE_CSBA")] <- "Black\nPhenoAge"
+BY15A9_main_int$dnam[BY15A9_main_int$param %in% c("PCE_CSBA")] <- "Black\nDunedinPACE"
+
+##import white
+WY15A9_main <- readModels(here("final/W/r1/main"), quiet = TRUE, what = "parameters")
+WY15A9_main_est <- lapply(WY15A9_main, function(x){x$parameters$ci.stdyx.standardized}) 
+WY15A9_main_est <- do.call(rbind.data.frame, WY15A9_main_est) 
+WY15A9_main_int <- as.data.frame(filter(WY15A9_main_est, paramHeader == "Intercepts" & LatentClass %in% 1:2) %>%
+                                   subset(select = c("param", "est", "low2.5", "up2.5", "LatentClass")))  %>%
+  mutate(class = ifelse(LatentClass == 1, "White: Integrated & Unequal (46.5%)", "White: Predominantly White & Advantaged (53.5%)"), 
+         class_f = factor(class, levels = c('White: Predominantly White & Advantaged (53.5%)', 'White: Integrated & Unequal (46.5%)'))) 
+# Initialize the "dnam" variable with 0 for all rows
+WY15A9_main_int$dnam <- 0  
+# Assign values to "dnam" based on the conditions
+WY15A9_main_int$dnam[WY15A9_main_int$param %in% c("GRM_CSWA")] <- "White\nGrimAge"
+WY15A9_main_int$dnam[WY15A9_main_int$param %in% c("PHE_CSWA")] <- "White\nPhenoAge"
+WY15A9_main_int$dnam[WY15A9_main_int$param %in% c("PCE_CSWA")] <- "White\nDunedinPACE"
+
+# join black and white into one dataframe 
+desired_order <- c("Black\nGrimAge", "Black\nPhenoAge", "Black\nDunedinPACE", "White\nGrimAge", "White\nPhenoAge", "White\nDunedinPACE")
+BWY15A9_main_int <- full_join(BY15A9_main_int, WY15A9_main_int)
+
+plot_colors <- c("#228833","#AA3377","#4477AA","#66CCEE","#CCBB44")
+col_b1 <- addAlpha(plot_colors, alpha = .15)
+col_b2 <- addAlpha(plot_colors, alpha = 1)
+
+## plot
+fig1_main_eaa <- ggplot(BWY15A9_main_int, aes(dnam, est)) +
+  geom_pointrange(
+    aes(ymin = low2.5, ymax = up2.5, shape=class_f, color = class_f),
+    position = position_dodge(0.4)
+  ) +
+  scale_shape_manual(values = c(16, 16, 16, 15, 15)) +
+  scale_color_manual(values = col_b2) +
+  theme_bw() +
+  scale_x_discrete(
+    name = NULL,
+    limits = desired_order, 
+    labels = desired_order,
+  ) +
+  ylab("Std. Residual Change in Epigenetic 
+Age Acceleration from Age 9 to 15") +
+  geom_vline(xintercept = 3.5, linetype = "dotted", color = "grey50") +
+  geom_hline(yintercept = 0, color = "grey50") +
+  theme(
+    panel.grid.major.x = element_blank(), 
+    panel.grid.minor.x = element_blank(), 
+    #panel.grid.minor.y = element_blank(),
+    panel.border = element_blank(),
+    axis.line = element_line(color = "grey50"),
+    axis.text.x = element_text(size = 11, color = "black"),
+    axis.text = element_text(color = "black"),
+    legend.position = "bottom",
+    legend.direction = 'vertical',
+    legend.text = element_text(size = 10, color = "black"),
+    legend.title = element_blank()
+  )
+
+# save plot
+ggsave(filename = "/Users/[blinded]/Library/CloudStorage/Box-Box/FF/final/r1 plots/main EAA plot 110823.png", 
+       plot = fig1_main_eaa, 
+       width = 2000, height = 1800, units = "px", dpi = 300)
+# close the PNG device
+dev.off()
