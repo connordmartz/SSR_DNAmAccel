@@ -1,0 +1,305 @@
+### supp outcomes of zBMI, S=self-rated health, and parent-rated child health----
+## black Y15 adj Y9 BMI ----
+bch_step2 <- mplusObject(
+  TITLE = "Step3 (MANUAL 3-STEP ML APPROACH)",
+  VARIABLE ="
+    usevar = BCHW1-BCHW3 ch5bmiz ck6bmiz FEMALE ageW6 m1city ageW5 eduy9
+    tpbfpl00 incpovY9;
+    missing are all (9999);
+    classes = C(3);
+    training = BCHW1-BCHW3(bch); 
+    cluster=m1city; 
+    DEFINE: center AgeW5 eduY9 ageW6 FEMALE tpbfpl00 incpovY9 
+  (grandmean);", 
+  ANALYSIS = "
+    estimator = mlr;
+    type = mixture complex;
+    starts 1000 150;
+    processors = 8(starts);",
+  MODEL = glue("
+  %OVERALL%
+  c on AgeW5 eduy9 FEMALE;
+  ck6bmiz ON ageW6 eduY9 FEMALE ch5bmiz tpbfpl00 incpovY9; 
+  ck6bmiz; 
+  
+  %C#1% 
+  ck6bmiz ON ageW6 eduY9 FEMALE ch5bmiz tpbfpl00 incpovY9;
+  [ck6bmiz] (bmi1);
+  ck6bmiz;
+  
+  %C#2%
+  ck6bmiz ON ageW6 eduY9 FEMALE ch5bmiz tpbfpl00 incpovY9;
+  [ck6bmiz] (bmi2); 
+  ck6bmiz;
+  
+  %C#3% 
+  ck6bmiz  ON ageW6 eduY9 FEMALE ch5bmiz tpbfpl00 incpovY9;
+  [ck6bmiz] (bmi3);
+  ck6bmiz;"),
+  
+  MODELCONSTRAINT = "
+  ! BMI tests of difference between classes
+  NEW (bmi_c12); bmi_c12 = bmi1-bmi2; 
+  NEW (bmi_c13); bmi_c13 = bmi1-bmi3;
+  NEW (bmi_c23); bmi_c23 = bmi2-bmi3;",
+  MODELTEST = "
+  bmi1=bmi2;
+  bmi2=bmi3;", 
+  OUTPUT = "TECH4 STANDARDIZED CINTERVAL;",
+  usevariables = colnames(savedata_black_main_2), 
+  rdata = savedata_black_main_2)
+bch_step2_fit <- mplusModeler(bch_step2, 
+                              dataout=here("final/B/r1/supp/health/y15y9", "bmi.dat"), 
+                              modelout=here("final/B/r1/supp/health/y15y9", "bmi.inp"), 
+                              check=TRUE, run=TRUE, hashfilename=FALSE)
+
+
+
+## black Y15 adj Y9 Self-Rated Health ----
+bch_step2 <- mplusObject(
+  TITLE = "Step3 (MANUAL 3-STEP ML APPROACH)",
+  VARIABLE ="
+    usevar = BCHW1-BCHW3 ageW5 female k5h1 k6d3 ageW6 m1city eduy9
+    tpbfpl00 incpovY9;
+    missing are all (9999);
+    classes = C(3);
+    training = BCHW1-BCHW3(bch); 
+    cluster=m1city;
+    DEFINE: center AgeW6 ageW5 eduy9 FEMALE
+  tpbfpl00 incpovY9 (grandmean);", 
+  ANALYSIS = "
+    estimator = mlr;
+    type = mixture complex;
+    starts 1000 150;
+    processors = 8(starts);",
+  MODEL = glue("
+  %OVERALL%
+  c on AgeW5 eduy9 FEMALE;
+  k6d3 ON AgeW6 eduy9 FEMALE k5h1 tpbfpl00 incpovY9; 
+  k6d3; 
+  
+  %C#1% 
+  k6d3 ON AgeW6 eduy9 FEMALE k5h1 tpbfpl00 incpovY9; 
+  k6d3; 
+  [k6d3] (srh1);
+  
+  %C#2%
+  k6d3 ON AgeW6 eduy9 FEMALE k5h1 tpbfpl00 incpovY9; 
+  k6d3; 
+  [k6d3] (srh2); 
+
+  %C#3% 
+  k6d3 ON AgeW6 eduy9 FEMALE k5h1 tpbfpl00 incpovY9; 
+  k6d3; 
+  [k6d3] (srh3);"),
+  
+  MODELCONSTRAINT = "
+  ! srh tests of difference between classes
+  NEW (srh_c12); srh_c12 = srh1-srh2; 
+  NEW (srh_c13); srh_c13 = srh1-srh3;
+  NEW (srh_c23); srh_c23 = srh2-srh3;",
+  MODELTEST = "
+  srh1=srh2;
+  srh2=srh3;", 
+  OUTPUT = "TECH4 STANDARDIZED CINTERVAL;",
+  usevariables = colnames(savedata_black_main_2), 
+  rdata = savedata_black_main_2)
+bch_step2_fit <- mplusModeler(bch_step2, 
+                              dataout=here("final/B/r1/supp/health/y15y9", "srh.dat"), 
+                              modelout=here("final/B/r1/supp/health/y15y9", "srh.inp"), 
+                              check=TRUE, run=TRUE, hashfilename=FALSE)
+
+
+
+## black Y15 adj Y9 Parent-Rated Health ----
+bch_step2 <- mplusObject(
+  TITLE = "Step3 (MANUAL 3-STEP ML APPROACH)",
+  VARIABLE ="
+    usevar = BCHW1-BCHW3 female p6b1 p5h1 ageW6
+    tpbfpl00 incpovY9 m1city ageW5 eduy9 ;
+    missing are all (9999);
+    classes = C(3);
+    training = BCHW1-BCHW3(bch); 
+    cluster=m1city;
+    DEFINE: center AgeW5 eduy9 ageW6 FEMALE 
+  tpbfpl00 incpovY9(grandmean);", 
+  ANALYSIS = "
+    estimator = mlr;
+    type = mixture complex;
+    starts 1000 150;
+    processors = 8(starts);",
+  MODEL = glue("
+  %OVERALL%
+  c on AgeW5 eduy9 FEMALE;
+  p6b1 ON AgeW6 eduy9 FEMALE p5h1 tpbfpl00 incpovY9; 
+  p6b1; 
+  
+  %C#1% 
+  p6b1 ON AgeW6 eduy9 FEMALE p5h1 tpbfpl00 incpovY9; 
+  [p6b1] (prh1);
+  p6b1;
+  
+  %C#2%
+  p6b1 ON AgeW6 eduy9 FEMALE p5h1 tpbfpl00 incpovY9; 
+  [p6b1] (prh2); 
+  p6b1;
+  
+  %C#3% 
+  p6b1  ON AgeW6 eduy9 FEMALE p5h1 tpbfpl00 incpovY9; 
+  [p6b1] (prh3);
+  p6b1;"),
+  
+  MODELCONSTRAINT = "
+  ! prh tests of difference between classes
+  NEW (prh_c12); prh_c12 = prh1-prh2; 
+  NEW (prh_c13); prh_c13 = prh1-prh3;
+  NEW (prh_c23); prh_c23 = prh2-prh3;",
+  MODELTEST = "
+  prh1=prh2;
+  !prh2=prh3;", 
+  OUTPUT = "TECH4 STANDARDIZED CINTERVAL;",
+  usevariables = colnames(savedata_black_main_2), 
+  rdata = savedata_black_main_2)
+bch_step2_fit <- mplusModeler(bch_step2, 
+                              dataout=here("final/B/r1/supp/health/y15y9", "prh.dat"), 
+                              modelout=here("final/B/r1/supp/health/y15y9", "prh.inp"), 
+                              check=TRUE, run=TRUE, hashfilename=FALSE)
+
+
+
+
+## white Y15 adj Y9 BMI ----
+bch_step2 <- mplusObject(
+  TITLE = "Step3 (MANUAL 3-STEP ML APPROACH)",
+  VARIABLE ="
+    usevar = BCHW1-BCHW2 ch5bmiz ck6bmiz FEMALE ageW6 m1city ageW5 eduy9
+    tpbfpl00 incpovY9;
+    missing are all (9999);
+    classes = C(2);
+    training = BCHW1-BCHW2(bch); 
+    cluster=m1city;
+    DEFINE: center AgeW5 eduy9 ageW6 FEMALE 
+  tpbfpl00 incpovY9 (grandmean);", 
+  ANALYSIS = "
+    estimator = mlr;
+    type = mixture complex;
+    starts 2000 100;
+    processors = 8(starts);",
+  MODEL = glue("
+  %OVERALL%
+  c on AgeW5 eduy9 FEMALE;
+  ck6bmiz ON AgeW6 eduy9 FEMALE ch5bmiz tpbfpl00 incpovY9;; 
+  ck6bmiz; 
+  
+  %C#1% 
+  ck6bmiz ON AgeW6 eduy9 FEMALE ch5bmiz tpbfpl00 incpovY9;; 
+  [ck6bmiz] (bmi1);
+  ck6bmiz;
+  
+  %C#2%
+  ck6bmiz ON AgeW6 eduy9 FEMALE ch5bmiz tpbfpl00 incpovY9;; 
+  [ck6bmiz] (bmi2); 
+  ck6bmiz;"),
+  
+  MODELCONSTRAINT = "
+  ! BMI tests of difference between white classes
+  NEW (bmi12); bmi12 = bmi2-bmi1;",
+  MODELTEST = "
+  bmi1=bmi2;", 
+  OUTPUT = "TECH4 STANDARDIZED CINTERVAL;",
+  usevariables = colnames(savedata_white_main_2), 
+  rdata = savedata_white_main_2)
+bch_step2_fit <- mplusModeler(bch_step2, 
+                              dataout=here("final/W/r1/supp/health/y15y9", "bmi.dat"), 
+                              modelout=here("final/W/r1/supp/health/y15y9", "bmi.inp"), 
+                              check=TRUE, run=TRUE, hashfilename=FALSE)
+## white Y15 adj Y9 self-rated health ----
+bch_step2 <- mplusObject(
+  TITLE = "Step3 (MANUAL 3-STEP ML APPROACH)",
+  VARIABLE ="
+    usevar = BCHW1-BCHW2 female k5h1 k6d3 ageW6 ageW5
+    tpbfpl00 incpovY9 m1city ageW5 eduy9;
+    missing are all (9999);
+    classes = C(2);
+    training = BCHW1-BCHW2(bch); 
+    cluster=m1city;
+    DEFINE: center ageW6 AgeW5 eduy9 FEMALE 
+  tpbfpl00 incpovY9 (grandmean);", 
+  ANALYSIS = "
+    estimator = mlr;
+    type = mixture complex;
+    starts 2000 100;
+    processors = 8(starts);",
+  MODEL = glue("
+  %OVERALL%
+  c on AgeW5 eduy9 FEMALE;
+  k6d3 ON ageW6 eduy9 FEMALE k5h1 tpbfpl00 incpovY9; 
+  k6d3; 
+  
+  %C#1% 
+  k6d3 ON ageW6 eduy9 FEMALE k5h1 tpbfpl00 incpovY9; 
+  [k6d3] (srh1);
+  k6d3;
+  
+  %C#2%
+  k6d3 ON ageW6 eduy9 FEMALE k5h1 tpbfpl00 incpovY9; 
+  [k6d3] (srh2); 
+  k6d3;"),
+  
+  MODELCONSTRAINT = "
+  ! srh tests of difference between white classes
+  NEW (srh12); srh12 = srh2-srh1;",
+  MODELTEST = "
+  srh1=srh2;", 
+  OUTPUT = "TECH4 STANDARDIZED CINTERVAL;",
+  usevariables = colnames(savedata_white_main_2), 
+  rdata = savedata_white_main_2)
+bch_step2_fit <- mplusModeler(bch_step2, 
+                              dataout=here("final/W/r1/supp/health/y15y9", "srh.dat"), 
+                              modelout=here("final/W/r1/supp/health/y15y9", "srh.inp"), 
+                              check=TRUE, run=TRUE, hashfilename=FALSE)
+## white Y15 adj Y9 parent-rated health ----
+bch_step2 <- mplusObject(
+  TITLE = "Step3 (MANUAL 3-STEP ML APPROACH)",
+  VARIABLE ="
+    usevar = BCHW1-BCHW2 p5h1 p6b1 FEMALE ageW6 
+    tpbfpl00 incpovY9 m1city ageW5 eduy9;
+    missing are all (9999);
+    classes = C(2);
+    training = BCHW1-BCHW2(bch); 
+    cluster=m1city;
+    DEFINE: center AgeW5 eduy9 ageW6 FEMALE
+  tpbfpl00 incpovY9 (grandmean);", 
+  ANALYSIS = "
+    estimator = mlr;
+    type = mixture complex;
+    starts 2000 100;
+    processors = 8(starts);",
+  MODEL = glue("
+  %OVERALL%
+  c on AgeW5 eduy9 FEMALE;
+  p6b1 ON ageW6 eduy9 FEMALE p5h1 tpbfpl00 incpovY9; 
+  p6b1; 
+  
+  %C#1% 
+  p6b1 ON ageW6 eduy9 FEMALE p5h1 tpbfpl00 incpovY9; 
+  [p6b1] (prh1);
+  p6b1;
+  
+  %C#2%
+  p6b1 ON ageW6 eduy9 FEMALE p5h1 tpbfpl00 incpovY9; 
+  [p6b1] (prh2); 
+  p6b1;"),
+  
+  MODELCONSTRAINT = "
+  ! prh tests of difference between white classes
+  NEW (prh12); prh12 = prh2-prh1;",
+  MODELTEST = "
+  prh1=prh2;", 
+  OUTPUT = "TECH4 STANDARDIZED CINTERVAL;",
+  usevariables = colnames(savedata_white_main_2), 
+  rdata = savedata_white_main_2)
+bch_step2_fit <- mplusModeler(bch_step2, 
+                              dataout=here("final/W/r1/supp/health/y15y9", "prh.dat"), 
+                              modelout=here("final/W/r1/supp/health/y15y9", "prh.inp"), 
+                              check=TRUE, run=TRUE, hashfilename=FALSE)
