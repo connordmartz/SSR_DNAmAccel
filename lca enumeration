@@ -1,0 +1,171 @@
+#### LATENT CLASS ANALYSES ####
+### black: fit LCA models of 1-8 classes ----
+setwd("/Users/[blinded]/Library/CloudStorage/Box-Box/FF")
+here::i_am("mplus automation.R")
+getwd()
+
+black_lca_new$idnum <- as.numeric(black_lca_new$idnum)
+black_lca_new2 <- labelled::remove_val_labels(black_lca_new)
+
+lca_k1_8  <- lapply(1:8, function(k) {
+  lca_enum  <- mplusObject(
+    TITLE = glue("Class {k}"), 
+    VARIABLE = glue(
+      "categorical = segd49 segs49 sesseg49 seslq49
+                     nogt9 teach49  sal49_r first49 
+                     ach49 dis49 bull9cat; 
+      usevar =       segd49 segs49 sesseg49 seslq49
+                     nogt9 teach49  sal49_r first49 
+                     ach49 dis49 bull9cat; 
+      idvariable = idnum;
+      auxiliary = race ageW5 female
+                  eduY9 momsmk_d m1city chip epiw5
+                  fibw5 pbe9b phe9b grim9b pa459zb
+                  k5h1 p5h1 k6d3 p6b1 incpovY9 ch5bmiz; 
+      cluster = rs5schidp;
+      classes = c({k}); "),
+    ANALYSIS = 
+      "estimator = mlr; 
+       type = mixture complex;
+       starts = 3000 750; 
+       processors = 8(STARTS);",
+
+    OUTPUT = "tech11 entropy;",
+    SAVEDATA = glue(
+      "File=/Users/[blinded]/Library/CloudStorage/Box-Box/FF/final/B/r1/enum/assign_{k}c.dat;
+      save=CPROB;
+      format=free;"),
+    PLOT = 
+      "type = plot3; 
+       series = segd49 segs49 sesseg49 seslq49
+                     nogt9 teach49  sal49_r first49 
+                     ach49 dis49 bull9cat(*);",
+    usevariables = colnames(black_lca_new2), 
+    rdata = black_lca_new2)
+  
+  lca_enum_fit <- mplusModeler(lca_enum, 
+                               dataout=glue(here("final/B/r1/enum", "black_c{k}.dat")),
+                               modelout=glue(here("final/B/r1/enum", "black_c{k}.inp")) ,
+                               check=TRUE, run = TRUE, hashfilename = FALSE)})
+## black: compare model fits and identify best-fitting solution ----
+r1_out_b <- readModels(here("final/B/r1/enum"), quiet = TRUE) 
+
+r1_b_enum <- LatexSummaryTable(r1_out_b,                                             
+                                keepCols=c("Title", "LL", "AIC", "BIC", "aBIC", "Entropy",                              
+                                           "T11_VLMR_PValue", "BLRT_PValue"),                          
+                                sortBy = "Title")
+gt(r1_b_enum) %>%                                                                       
+  tab_header(                                                                             
+    title = "Fit Indices") %>%                                                            
+  tab_options(                                                                           
+    table.width = pct(80), 
+    table.font.size = pct(70)) %>%                                                            
+  tab_footnote(                                                                           
+    footnote = "Y9 School Structural Racism Profiles",                                   
+    location = cells_title())   
+
+# elbow plot of AIC values 
+Y9_summary_bicplot <- tibble::rowid_to_column(r1_b_enum, "Profiles") 
+#Y9_summary_bicplot <- mutate(Y9_summary_bicplot, Profiles = temp + 1)
+plot(Y9_summary_bicplot$Profiles, Y9_summary_bicplot$AIC, 
+     type="b", pch = 19, frame = FALSE, 
+     xlab="Number of classes",
+     ylab="AIC")
+# elbow plot of BIC values 
+Y9_summary_bicplot <- tibble::rowid_to_column(r1_b_enum, "Profiles") 
+#Y9_summary_bicplot <- mutate(Y9_summary_bicplot, Profiles = temp + 1)
+plot(Y9_summary_bicplot$Profiles, Y9_summary_bicplot$BIC, 
+     type="b", pch = 19, frame = FALSE, 
+     xlab="Number of classes",
+     ylab="BIC")
+# elbow plot of aBIC values 
+Y9_summary_bicplot <- tibble::rowid_to_column(r1_b_enum, "Profiles") 
+#Y9_summary_bicplot <- mutate(Y9_summary_bicplot, Profiles = temp + 1)
+plot(Y9_summary_bicplot$Profiles, Y9_summary_bicplot$aBIC, 
+     type="b", pch = 19, frame = FALSE, 
+     xlab="Number of classes",
+     ylab="aBIC")
+
+
+
+#### white: fit LCA models of 1-8 classes ----
+setwd("/Users/[blinded]/Library/CloudStorage/Box-Box/FF")
+here::i_am("mplus automation.R")
+getwd()
+
+white_lca_new$idnum <- as.numeric(white_lca_new$idnum)
+white_lca_new2 <- labelled::remove_val_labels(white_lca_new)
+
+lca_k1_8  <- lapply(1:8, function(k) {
+  lca_enum  <- mplusObject(
+    TITLE = glue("Class {k}"), 
+    VARIABLE = glue(
+      "categorical = segd49 segs49 sesseg49 seslq49
+                     nogt9 teach49  sal49_r first49 
+                     ach49 dis49 bull9cat;
+      usevar =  segd49 segs49 sesseg49 seslq49
+                     nogt9 teach49  sal49_r first49 
+                     ach49 dis49 bull9cat;
+      idvariable = idnum;
+      cluster = rs5schidp;
+      classes = c({k}); "),
+    ANALYSIS = 
+      "estimator = mlr; 
+       type = mixture complex;
+       starts = 1500 325; 
+       processors = 8(STARTS);",
+    OUTPUT = "tech11 entropy;",
+    SAVEDATA = glue(
+      "File=/Users/[blinded]/Library/CloudStorage/Box-Box/FF/final/W/r1/enum/assign_{k}c.dat;
+      save=CPROB;
+      format=free;"),
+    PLOT = 
+      "type = plot3; 
+       series = segd49 segs49 sesseg49 seslq49
+                     nogt9 teach49  sal49_r first49 
+                     ach49 dis49 bull9cat(*);",
+    usevariables = colnames(white_lca_new2), 
+    rdata = white_lca_new2)
+  
+  lca_enum_fit <- mplusModeler(lca_enum, 
+                               dataout=glue(here("final/W/r1/enum", "white_c{k}.dat")),
+                               modelout=glue(here("final/W/r1/enum", "white_c{k}.inp")) ,
+                               check=TRUE, run = TRUE, hashfilename = FALSE)})
+### white: compare model fits and identify best-fitting solution ----
+r1_out_w <- readModels(here("final/W/r1/enum"), quiet = TRUE) 
+
+r1_w_enum <- LatexSummaryTable(r1_out_w,                                             
+                               keepCols=c("Title", "LL", "AIC", "BIC", "aBIC", "Entropy",                              
+                                          "T11_VLMR_PValue", "BLRT_PValue"),                          
+                               sortBy = "Title")
+gt(r1_w_enum) %>%                                                                       
+  tab_header(                                                                             
+    title = "Fit Indices") %>%                                                            
+  tab_options(                                                                           
+    table.width = pct(80), 
+    table.font.size = pct(70)) %>%                                                            
+  tab_footnote(                                                                           
+    footnote = "Y9 School Structural Racism Profiles",                                   
+    location = cells_title())   
+
+# elbow plot of AIC values 
+Y9_summary_bicplot <- tibble::rowid_to_column(r1_w_enum, "Profiles") 
+#Y9_summary_bicplot <- mutate(Y9_summary_bicplot, Profiles = temp + 1)
+plot(Y9_summary_bicplot$Profiles, Y9_summary_bicplot$AIC, 
+     type="b", pch = 19, frame = FALSE, 
+     xlab="Number of classes",
+     ylab="AIC")
+# elbow plot of BIC values 
+Y9_summary_bicplot <- tibble::rowid_to_column(r1_w_enum, "Profiles") 
+#Y9_summary_bicplot <- mutate(Y9_summary_bicplot, Profiles = temp + 1)
+plot(Y9_summary_bicplot$Profiles, Y9_summary_bicplot$BIC, 
+     type="b", pch = 19, frame = FALSE, 
+     xlab="Number of classes",
+     ylab="BIC")
+# elbow plot of aBIC values 
+Y9_summary_bicplot <- tibble::rowid_to_column(r1_w_enum, "Profiles") 
+#Y9_summary_bicplot <- mutate(Y9_summary_bicplot, Profiles = temp + 1)
+plot(Y9_summary_bicplot$Profiles, Y9_summary_bicplot$aBIC, 
+     type="b", pch = 19, frame = FALSE, 
+     xlab="Number of classes",
+     ylab="aBIC")
