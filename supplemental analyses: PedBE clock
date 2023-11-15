@@ -1,0 +1,329 @@
+### PedBE epigenetic clock models  ----
+## black: PedBE residual change score----
+bch_step2 <- mplusObject(
+  TITLE = "Step3 (MANUAL 3-STEP ML APPROACH)",
+  VARIABLE ="
+    usevar = BCHW1-BCHW3 ageW6 ageW5 FEMALE eduY9 eduY9 m1city chip 
+            ped_csba momsmk_d  fibw5 epiw5 fibw6 epiw6 tpbfpl00 incpovY9;
+    missing are all (9999);
+    classes = C(3);
+    training = BCHW1-BCHW3(bch); 
+    auxiliary = cls N;
+    cluster=m1city;
+    DEFINE: center ageW5 ageW6 eduY9 FEMALE chip momsmk_d 
+  fibw6 epiw6 fibw5 epiw5 tpbfpl00 incpovY9
+  (grandmean);", 
+  ANALYSIS = "
+    estimator = mlr;
+    type = mixture complex;
+    starts 1000 150;
+    processors = 8;",
+  MODEL = glue("
+  %OVERALL%
+  c on AgeW5 eduy9 FEMALE;
+  ped_csba ON ageW5 ageW6 eduY9 FEMALE chip momsmk_d fibw6 epiw6 fibw5 epiw5
+  tpbfpl00 incpovY9; 
+  ped_csba; 
+  
+  %C#1% 
+  ped_csba ON ageW5 ageW6 eduY9 FEMALE chip momsmk_d fibw6 epiw6 fibw5 epiw5
+  tpbfpl00 incpovY9;  
+  [ped_csba] (m1);
+  ped_csba;
+  
+  %C#2%
+  ped_csba ON ageW5 ageW6 eduY9 FEMALE chip momsmk_d fibw6 epiw6 fibw5 epiw5
+  tpbfpl00 incpovY9; 
+  [ped_csba] (m2); 
+  ped_csba;
+  
+  %C#3% 
+  ped_csba ON ageW5 ageW6 eduY9 FEMALE chip momsmk_d fibw6 epiw6 fibw5 epiw5
+  tpbfpl00 incpovY9; 
+  [ped_csba] (m3);
+  ped_csba;
+  "),
+  
+  MODELCONSTRAINT = "
+  ! BMI tests of difference between white classes
+  NEW (pedbe_c12); pedbe_c12 = m2-m1;
+  NEW (pedbe_c13); pedbe_c13 = m3-m1; 
+  NEW (pedbe_c23); pedbe_c23 = m2-m3;",
+  MODELTEST = "
+  m1=m3;
+  m2=m3;
+  ", 
+  OUTPUT = "TECH1 TECH4 STANDARDIZED CINTERVAL;",
+  SAVEDATA = 
+    "file is pedbe_step2.dat;
+  save is cprob;",
+  usevariables = colnames(savedata_black_main_2), 
+  rdata = savedata_black_main_2)
+bch_step2_fit <- mplusModeler(bch_step2, 
+                              dataout=here("final/B/r1/supp/pedbe", "pedbe.dat"), 
+                              modelout=here("final/B/r1/supp/pedbe", "pedbe.inp"), 
+                              check=TRUE, run=TRUE, hashfilename=FALSE)
+## white: PedBE residual change score  ----
+bch_step2 <- mplusObject(
+  TITLE = "Step3 (MANUAL 3-STEP ML APPROACH)",
+  VARIABLE ="
+    usevar = BCHW1-BCHW2 ageW5 FEMALE eduY9 m1city fibw5 epiw5
+            ped_cswa momsmk_d ageW6 eduY9 chip fibw6 epiw6 
+            tpbfpl00 incpovY9;
+    missing are all (9999);
+    classes = C(2);
+    training = BCHW1-BCHW2(bch); 
+    cluster=m1city;
+    DEFINE: center ageW5 AgeW6 eduY9 FEMALE chip momsmk_d 
+  fibw6 epiw6 fibw5 epiw5 tpbfpl00 incpovY9
+  (grandmean);", 
+  ANALYSIS = "
+    estimator = mlr;
+    type = mixture complex;
+    starts 1000 150;
+    processors = 8;",
+  MODEL = glue("
+  %OVERALL%
+  c on AgeW5 eduy9 FEMALE;
+  ped_cswa ON ageW6 eduY9 FEMALE chip momsmk_d fibw6 epiw6 fibw5 epiw5
+  tpbfpl00 incpovY9; 
+  ped_cswa; 
+  
+  %C#1% 
+  ped_cswa ON ageW6 eduY9 FEMALE chip momsmk_d fibw6 epiw6 fibw5 epiw5
+  tpbfpl00 incpovY9; 
+  [ped_cswa] (m1);
+  ped_cswa;
+  
+  %C#2%
+  ped_cswa ON ageW6 eduY9 FEMALE chip momsmk_d fibw6 epiw6 fibw5 epiw5
+  tpbfpl00 incpovY9; 
+  [ped_cswa] (m2); 
+  ped_cswa;"),
+  
+  MODELCONSTRAINT = "
+  ! BMI tests of difference between white classes
+  NEW (pedbe_c12); pedbe_c12 = m2-m1; ",
+  MODELTEST = "
+  m1=m2;  ", 
+  OUTPUT = "TECH4 STANDARDIZED CINTERVAL;",
+  usevariables = colnames(savedata_white_main), 
+  rdata = savedata_white_main)
+bch_step2_fit <- mplusModeler(bch_step2, 
+                              dataout=here("final/W/r1/supp/pedbe", "pedbe.dat"), 
+                              modelout=here("final/W/r1/supp/pedbe", "pedbe.inp"), 
+                              check=TRUE, run=TRUE, hashfilename=FALSE)
+## black: PedBE Y9 cross sectional----
+bch_step2 <- mplusObject(
+  TITLE = "Step3 (MANUAL 3-STEP ML APPROACH)",
+  VARIABLE ="
+    usevar = BCHW1-BCHW3  ageW5 FEMALE eduY9 eduY9 m1city chip 
+            pbe9b momsmk_d  fibw5 epiw5  tpbfpl00 incpovY9;
+    missing are all (9999);
+    classes = C(3);
+    training = BCHW1-BCHW3(bch); 
+    auxiliary = cls N;
+    cluster=m1city;
+    DEFINE: center ageW5 eduY9 FEMALE chip momsmk_d 
+   fibw5 epiw5 tpbfpl00 incpovY9
+  (grandmean);", 
+  ANALYSIS = "
+    estimator = mlr;
+    type = mixture complex;
+    starts 1000 150;
+    processors = 8;",
+  MODEL = glue("
+  %OVERALL%
+  c on AgeW5 eduy9 FEMALE;
+  pbe9b ON ageW5 eduY9 FEMALE chip momsmk_d fibw5 epiw5 tpbfpl00 incpovY9; 
+  pbe9b; 
+  
+  %C#1% 
+  pbe9b ON ageW5 eduY9 FEMALE chip momsmk_d fibw5 epiw5 tpbfpl00 incpovY9;   
+  [pbe9b] (m1);
+  pbe9b;
+  
+  %C#2%
+  pbe9b ON ageW5 eduY9 FEMALE chip momsmk_d fibw5 epiw5 tpbfpl00 incpovY9;   
+  [pbe9b] (m2); 
+  pbe9b;
+  
+  %C#3% 
+  pbe9b ON ageW5 eduY9 FEMALE chip momsmk_d fibw5 epiw5 tpbfpl00 incpovY9;   
+  [pbe9b] (m3);
+  pbe9b;
+  "),
+  
+  MODELCONSTRAINT = "
+  ! BMI tests of difference between white classes
+  NEW (pedbe_c12); pedbe_c12 = m2-m1;
+  NEW (pedbe_c13); pedbe_c13 = m3-m1; 
+  NEW (pedbe_c23); pedbe_c23 = m2-m3;",
+  MODELTEST = "
+  m1=m3;
+  m2=m3;
+  ", 
+  OUTPUT = "TECH1 TECH4 STANDARDIZED CINTERVAL;",
+  SAVEDATA = 
+    "file is pedbe_step2.dat;
+  save is cprob;",
+  usevariables = colnames(savedata_black_main_2), 
+  rdata = savedata_black_main_2)
+bch_step2_fit <- mplusModeler(bch_step2, 
+                              dataout=here("final/B/r1/supp/pedbe", "pedbe9.dat"), 
+                              modelout=here("final/B/r1/supp/pedbe", "pedbe9.inp"), 
+                              check=TRUE, run=TRUE, hashfilename=FALSE)
+## black: PedBE Y15 cross sectional----
+bch_step2 <- mplusObject(
+  TITLE = "Step3 (MANUAL 3-STEP ML APPROACH)",
+  VARIABLE ="
+    usevar = BCHW1-BCHW3 ageW6 ageW5 FEMALE eduY9 eduY9 m1city chip 
+            pbe15b momsmk_d fibw6 epiw6 tpbfpl00 incpovY9;
+    missing are all (9999);
+    classes = C(3);
+    training = BCHW1-BCHW3(bch); 
+    auxiliary = cls N;
+    cluster=m1city;
+    DEFINE: center ageW6 eduY9 FEMALE chip momsmk_d 
+  fibw6 epiw6 tpbfpl00 incpovY9
+  (grandmean);", 
+  ANALYSIS = "
+    estimator = mlr;
+    type = mixture complex;
+    starts 1000 150;
+    processors = 8;",
+  MODEL = glue("
+  %OVERALL%
+  c on AgeW5 eduy9 FEMALE;
+  pbe15b ON ageW6 eduY9 FEMALE chip momsmk_d fibw6 epiw6 tpbfpl00 incpovY9; 
+  pbe15b; 
+  
+  %C#1% 
+  pbe15b ON ageW6 eduY9 FEMALE chip momsmk_d fibw6 epiw6 tpbfpl00 incpovY9; 
+  [pbe15b] (m1);
+  pbe15b;
+  
+  %C#2%
+  pbe15b ON ageW6 eduY9 FEMALE chip momsmk_d fibw6 epiw6 tpbfpl00 incpovY9; 
+  [pbe15b] (m2); 
+  pbe15b;
+  
+  %C#3% 
+  pbe15b ON ageW6 eduY9 FEMALE chip momsmk_d fibw6 epiw6 tpbfpl00 incpovY9; 
+  [pbe15b] (m3);
+  pbe15b;
+  "),
+  
+  MODELCONSTRAINT = "
+  ! BMI tests of difference between white classes
+  NEW (pedbe_c12); pedbe_c12 = m2-m1;
+  NEW (pedbe_c13); pedbe_c13 = m3-m1; 
+  NEW (pedbe_c23); pedbe_c23 = m2-m3;",
+  MODELTEST = "
+  m1=m3;
+  m2=m3;
+  ", 
+  OUTPUT = "TECH1 TECH4 STANDARDIZED CINTERVAL;",
+  SAVEDATA = 
+    "file is pedbe_step2.dat;
+  save is cprob;",
+  usevariables = colnames(savedata_black_main_2), 
+  rdata = savedata_black_main_2)
+bch_step2_fit <- mplusModeler(bch_step2, 
+                              dataout=here("final/B/r1/supp/pedbe", "pedbe15.dat"), 
+                              modelout=here("final/B/r1/supp/pedbe", "pedbe15.inp"), 
+                              check=TRUE, run=TRUE, hashfilename=FALSE)
+## white: PedBE Y9 cross sectional  ----
+bch_step2 <- mplusObject(
+  TITLE = "Step3 (MANUAL 3-STEP ML APPROACH)",
+  VARIABLE ="
+    usevar = BCHW1-BCHW2 ageW5 FEMALE eduY9 m1city fibw5 epiw5
+            pbe9w momsmk_d  eduY9 chip 
+            tpbfpl00 incpovY9;
+    missing are all (9999);
+    classes = C(2);
+    training = BCHW1-BCHW2(bch); 
+    cluster=m1city;
+    DEFINE: center ageW5 eduY9 FEMALE chip momsmk_d 
+   fibw5 epiw5 tpbfpl00 incpovY9
+  (grandmean);", 
+  ANALYSIS = "
+    estimator = mlr;
+    type = mixture complex;
+    starts 1000 150;
+    processors = 8;",
+  MODEL = glue("
+  %OVERALL%
+  c on AgeW5 eduy9 FEMALE;
+  pbe9w ON ageW5 eduY9 FEMALE chip momsmk_d fibw5 epiw5 tpbfpl00 incpovY9; 
+  pbe9w; 
+  
+  %C#1% 
+  pbe9w ON ageW5 eduY9 FEMALE chip momsmk_d fibw5 epiw5 tpbfpl00 incpovY9; 
+  [pbe9w] (m1);
+  pbe9w;
+  
+  %C#2%
+  pbe9w ON ageW5 eduY9 FEMALE chip momsmk_d fibw5 epiw5 tpbfpl00 incpovY9; 
+  [pbe9w] (m2); 
+  pbe9w;"),
+  
+  MODELCONSTRAINT = "
+  ! BMI tests of difference between white classes
+  NEW (pedbe_c12); pedbe_c12 = m2-m1; ",
+  MODELTEST = "
+  m1=m2;  ", 
+  OUTPUT = "TECH4 STANDARDIZED CINTERVAL;",
+  usevariables = colnames(savedata_white_main), 
+  rdata = savedata_white_main)
+bch_step2_fit <- mplusModeler(bch_step2, 
+                              dataout=here("final/W/r1/supp/pedbe", "pedbe9.dat"), 
+                              modelout=here("final/W/r1/supp/pedbe", "pedbe9.inp"), 
+                              check=TRUE, run=TRUE, hashfilename=FALSE)
+## white: PedBE Y15 cross sectional  ----
+bch_step2 <- mplusObject(
+  TITLE = "Step3 (MANUAL 3-STEP ML APPROACH)",
+  VARIABLE ="
+    usevar = BCHW1-BCHW2 ageW5 ageW6 FEMALE eduY9 m1city fibw6 epiw6
+            pbe15w momsmk_d  eduY9 chip 
+            tpbfpl00 incpovY9;
+    missing are all (9999);
+    classes = C(2);
+    training = BCHW1-BCHW2(bch); 
+    cluster=m1city;
+    DEFINE: center ageW5 ageW6 eduY9 FEMALE chip momsmk_d 
+   fibw6 epiw6 tpbfpl00 incpovY9
+  (grandmean);", 
+  ANALYSIS = "
+    estimator = mlr;
+    type = mixture complex;
+    starts 1000 150;
+    processors = 8;",
+  MODEL = glue("
+  %OVERALL%
+  c on AgeW5 eduy9 FEMALE;
+  pbe15w ON ageW6 eduY9 FEMALE chip momsmk_d fibw6 epiw6 tpbfpl00 incpovY9; 
+  pbe15w; 
+  
+  %C#1% 
+  pbe15w ON ageW6 eduY9 FEMALE chip momsmk_d fibw6 epiw6 tpbfpl00 incpovY9; 
+  [pbe15w] (m1);
+  pbe15w;
+  
+  %C#2%
+  pbe15w ON ageW6 eduY9 FEMALE chip momsmk_d fibw6 epiw6 tpbfpl00 incpovY9; 
+  [pbe15w] (m2); 
+  pbe15w;"),
+  
+  MODELCONSTRAINT = "
+  ! BMI tests of difference between white classes
+  NEW (pedbe_c12); pedbe_c12 = m2-m1; ",
+  MODELTEST = "
+  m1=m2;  ", 
+  OUTPUT = "TECH4 STANDARDIZED CINTERVAL;",
+  usevariables = colnames(savedata_white_main), 
+  rdata = savedata_white_main)
+bch_step2_fit <- mplusModeler(bch_step2, 
+                              dataout=here("final/W/r1/supp/pedbe", "pedbe15.dat"), 
+                              modelout=here("final/W/r1/supp/pedbe", "pedbe15.inp"), 
+                              check=TRUE, run=TRUE, hashfilename=FALSE)
