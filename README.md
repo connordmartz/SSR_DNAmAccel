@@ -1,4 +1,6 @@
-This repository corresponds to the paper, "Structural racism in primary schools and changes in epigenetic age acceleration among Black and White youth", published in Social Science and Medicine (2024) by Martz et al. Code is provided for all analyses, including data wrangling, latent profile analyses, sensitivty analyses, and data visualization. For questions, please contact Dr. Connor Martz at connor.martz@austin.utexas.edu. 
+**Structural racism in primary schools and changes in epigenetic age acceleration among Black and White youth**
+
+This repository corresponds to the above paper published in Social Science and Medicine (2024) by Martz et al. Code is provided for all analyses, including data wrangling, latent profile analyses, sensitivty analyses, and data visualization. For questions, please contact Dr. Connor Martz at connor.martz@austin.utexas.edu. 
 
 Citation: 
 Martz CD, Benner AD, Goosby BJ, Mitchell C, Gaydosh L. Structural racism in primary schools and changes in epigenetic age acceleration among Black and White youth. Social Science & Medicine. Published online March 2, 2024:116724. doi:10.1016/j.socscimed.2024.116724
@@ -7,4 +9,4 @@ Abstract: Structural racism creates stark racial inequities in U.S. primary educ
 
 Keywords: Structural racism; Educational inequality; DNA methylation; Biological aging; Health inequities
 
-[MARTZ SSM MS_R1_PUBLIC.pdf](https://github.com/connordmartz/SSR_DNAmAccel/files/14488954/MARTZ.SSM.MS_R1_PUBLIC.pdf)
+[Accepted Manuscript](https://github.com/connordmartz/SSR_DNAmAccel/files/14488954/MARTZ.SSM.MS_R1_PUBLIC.pdf)
